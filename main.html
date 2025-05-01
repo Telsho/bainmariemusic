@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Bain Marie Music</title>
+
+</head>
+<body>
+  <div id="splash" onclick="this.classList.add('hide')" class="hide">
+     </div>
+
+  <div class="map-container">
+    <div id="map">
+      <img src="full_frame.gif" id="home-animated" alt="Animated Map">
+      <img src="Music hover.png" id="music-hover-overlay" alt="Music Area Hover">
+      <img src="MERCH hover.png" id="merch-hover-overlay" alt="Merch Area Hover">
+      <img src="CONTACT hover.png" id="contact-hover-overlay" alt="Contact Area Hover">
+    </div>
+
+    <div id="contact-info">
+        <p>fjewifew@gmail.com</p>
+        <button id="back-button">&larr; Back</button>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="./js/jquery.pan.js"></script>
+  <script>
+    console.log("Script start");
+
+    // --- Panning Logic ---
+    let isPanInitialized = false; // Flag
+    const $mapContainer = $('.map-container'); // Cache container selector
+    const $map = $('#map'); // Cache map selector
+
+    // Function to initialize the panning
+    function initializePanning() {
+      // Check if it's already initialized OR if it *should* be disabled OR if contact view is active
+      if (isPanInitialized || $mapContainer.hasClass('panning-disabled') || $mapContainer.hasClass('contact-view-active')) {
+        console.log("Initialize check: Already initialized, should be disabled, or contact view active. Aborting init.");
+        if ($mapContainer.hasClass('panning-disabled') || $mapContainer.hasClass('contact-view-active')) {
+          isPanInitialized = false; // Ensure flag is correct
+        }
+        return;
+      }
+
+      console.log("Attempting to initialize panning...");
+
+      // Defer calculation slightly to allow layout rendering
+      setTimeout(() => {
+        const containerWidth = $mapContainer.width();
+        const mapWidth = $map.width() || 1500; // Use fallback width matching CSS?
+
+        // Initial position: Attempt top-right alignment
+        const initialX = containerWidth > mapWidth ? containerWidth - mapWidth : 0;
+        const initialY = 0;
+
+        console.log(`Calculated Initial Position: X=${initialX}, Y=${initialY} (Container: ${containerWidth}, Map: ${mapWidth})`);
+
+        try {
+          if ($.fn.pan) {
+            console.log("Calling $mapContainer.pan({...})");
+            $mapContainer.pan({
+              'kineticDamping': 0,
+              'initialPosition': { 'x': initialX, 'y': initialY },
+              'cursor': 'grab'
+              // Add other pan options as needed
+            });
+            $mapContainer.removeClass('panning-disabled'); // Ensure disabled class is removed
+            $mapContainer.css('cursor', 'grab'); // Ensure cursor is correct
+            isPanInitialized = true;
+            console.log("Panning successfully initialized.");
+          } else {
+            console.error("jQuery.fn.pan function not found! Check if jquery.pan.js is loaded correctly.");
+            isPanInitialized = false;
+          }
+        } catch (e) {
+          console.error("Error initializing pan plugin:", e);
+          isPanInitialized = false; // Mark as not initialized if error occurs
+        }
+      }, 50); // Small delay
+    }
+
+    // Function to disable/destroy the panning
+    function disablePanning() {
+      console.log("Attempting to disable panning...");
+      $mapContainer.addClass('panning-disabled'); // Always add class for CSS rules
+      $mapContainer.css('cursor', 'default');   // Set cursor immediately
+
+      if (isPanInitialized) {
+        console.log("Panning was initialized, attempting to destroy/unbind...");
+        try {
+          // --- IMPORTANT: Check jquery.pan.js for a 'destroy' or 'disable' method ---
+          // If a method exists, call it here. Example:
+          // if (typeof $mapContainer.pan === 'function') { // Check if method exists
+          //    $mapContainer.pan('destroy'); // Replace 'destroy' with the actual method name
+          //    console.log("Called .pan('destroy') (or equivalent).");
+          // } else {
+          //    console.log(".pan('destroy') method not found, relying on class and manual unbind if necessary.");
+          // }
+
+          // If no destroy method, you might need to manually unbind events
+          // (Inspect the plugin's source for event namespaces like '.pan')
+          // $mapContainer.off('.pan'); // Example - uncomment and adjust namespace if needed
+          console.log("Manual unbind attempt (if uncommented/needed).");
+
+        } catch (e) {
+          console.error("Error trying to destroy pan instance or unbind events:", e);
+        } finally {
+          isPanInitialized = false; // Mark as not initialized
+          console.log("Panning marked as disabled. Added 'panning-disabled' class.");
+        }
+      } else {
+        console.log("Panning was not marked as initialized, ensuring 'panning-disabled' class is present.");
+      }
+    }
+
+    // Function to check size and enable/disable panning
+    function updatePanningBasedOnSize() {
+      // Don't change panning state if contact info is visible
+      if ($mapContainer.hasClass('contact-view-active')) {
+        console.log("Update Check: Contact view active, skipping pan update.");
+        if (!isPanInitialized) { // Ensure it's disabled if contact view is active but somehow init flag is false
+          disablePanning();
+        }
+        return;
+      }
+
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      console.log(`Update Check: Width=${screenWidth}, Height=${screenHeight}`);
+
+      // Condition to DISABLE panning: Screen is LARGER than 1024x974
+      const shouldBeDisabled = screenWidth > 1024 && screenHeight > 974;
+      console.log(`Should panning be disabled? ${shouldBeDisabled}`);
+
+      if (shouldBeDisabled) {
+        disablePanning();
+      } else {
+        // Only initialize if it's not already
+        if (!isPanInitialized) {
+          // Ensure disabling class is removed *before* attempting init
+          $mapContainer.removeClass('panning-disabled');
+          $mapContainer.css('cursor', 'grab'); // Reset cursor
+          initializePanning();
+        } else {
+          console.log("Panning should be enabled, and it's already initialized.");
+          // Ensure disabling class is removed if somehow present
+          $mapContainer.removeClass('panning-disabled');
+          $mapContainer.css('cursor', 'grab');
+        }
+      }
+    }
+
+
+    // --- Document Ready ---
+    $(document).ready(function () {
+      console.log("Document ready");
+
+      const $gif = $('#home-animated');
+      const $contactInfo = $('#contact-info');
+      const $backButton = $('#back-button');
+
+      // --- Define ALL Hotspots and their corresponding Overlay Selectors ---
+      const hotspots = [
+        { name: 'music', overlaySelector: '#music-hover-overlay', xMin: 60, xMax: 290, yMin: 400, yMax: 480 },
+        { name: 'merch', overlaySelector: '#merch-hover-overlay', xMin: 540, xMax: 750, yMin: 140, yMax: 210 },
+        { name: 'contact', overlaySelector: '#contact-hover-overlay', xMin: 515, xMax: 800, yMin: 675, yMax: 735 }
+        // Add more objects here for additional hotspots if needed
+      ];
+
+      // Find the contact hotspot data
+      const contactHotspot = hotspots.find(spot => spot.name === 'contact');
+      if (!contactHotspot) {
+        console.error("Contact hotspot data not found in the hotspots array!");
+        // Handle error appropriately, maybe disable click functionality
+      }
+
+      // --- Cache Overlay jQuery Objects ---
+      const $overlays = {};
+      let allElementsFound = true;
+
+      hotspots.forEach(spot => {
+        $overlays[spot.overlaySelector] = $(spot.overlaySelector);
+        if ($overlays[spot.overlaySelector].length === 0) {
+          console.error(`Overlay element (${spot.overlaySelector}) not found in HTML!`);
+          allElementsFound = false;
+        }
+      });
+
+      // Check for other essential elements
+      if ($gif.length === 0) {
+        console.error("GIF element #home-animated not found!");
+        allElementsFound = false;
+      }
+      if ($contactInfo.length === 0) {
+        console.error("Contact info element #contact-info not found!");
+        allElementsFound = false;
+      }
+      if ($backButton.length === 0) {
+        console.error("Back button element #back-button not found!");
+        allElementsFound = false;
+      }
+
+
+      // --- Initial Panning Check ---
+      console.log("Performing initial size check for panning...");
+      updatePanningBasedOnSize(); // Check panning state on load
+
+      // --- Resize Listener ---
+      let resizeTimer;
+      $(window).on('resize', function () {
+        console.log("Resize event detected");
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          console.log("Debounced resize execution");
+          updatePanningBasedOnSize(); // Re-check panning on resize
+        }, 250);
+      });
+
+
+      // --- Setup Effects only if all elements exist ---
+      if (allElementsFound) {
+
+        // --- Hover Effect Logic ---
+        $gif.on('mousemove', function (event) {
+          // Don't show hover effects if contact info is visible
+          if ($mapContainer.hasClass('contact-view-active')) {
+            return;
+          }
+
+          const gifOffset = $gif.offset();
+          // Important: Calculate offset *relative to the document*, not the map container,
+          // unless the map container itself is offset in a way that affects pageX/pageY.
+          // If panning moves the #map div, the gifOffset might need adjustment or
+          // calculate relative to the #map's offset. Let's assume standard offset for now.
+          const mouseX = event.pageX - gifOffset.left;
+          const mouseY = event.pageY - gifOffset.top;
+
+          let activeOverlaySelector = null; // Track active hover
+
+          hotspots.forEach(spot => {
+            const isInside = (mouseX >= spot.xMin && mouseX <= spot.xMax && mouseY >= spot.yMin && mouseY <= spot.yMax);
+            if (isInside) {
+              activeOverlaySelector = spot.overlaySelector;
+            }
+          });
+
+          // Show/hide overlays based on hover
+          hotspots.forEach(spot => {
+            const $overlay = $overlays[spot.overlaySelector];
+            if (spot.overlaySelector === activeOverlaySelector) {
+              $overlay.show();
+            } else {
+              $overlay.hide();
+            }
+          });
+        });
+
+        // --- Mouse Leave Logic for Hover ---
+        $gif.on('mouseleave', function () {
+          // Hide ALL overlays when mouse leaves the GIF
+          hotspots.forEach(spot => {
+            $overlays[spot.overlaySelector].hide();
+          });
+        });
+
+        // --- Click Logic for Contact ---
+        $gif.on('click', function (event) {
+          // Don't do anything if contact is already shown
+          if ($mapContainer.hasClass('contact-view-active') || !contactHotspot) {
+            return;
+          }
+
+          const gifOffset = $gif.offset(); // Recalculate offset on click
+          const clickX = event.pageX - gifOffset.left;
+          const clickY = event.pageY - gifOffset.top;
+
+          // Check if click is within the CONTACT hotspot
+          const isInsideContact = (
+            clickX >= contactHotspot.xMin && clickX <= contactHotspot.xMax &&
+            clickY >= contactHotspot.yMin && clickY <= contactHotspot.yMax
+          );
+
+          if (isInsideContact) {
+            console.log("Contact area clicked!");
+
+            // 1. Disable Panning
+            disablePanning();
+
+            // 2. Hide all hover overlays explicitly
+            hotspots.forEach(spot => {
+              $overlays[spot.overlaySelector].hide();
+            });
+
+            $mapContainer.css('overflow', 'visible')
+
+            // 3. Add animation classes
+            $mapContainer.addClass('contact-view-active'); // Add state to container
+            $gif.addClass('gif-animate-forward');
+
+          } else {
+            console.log("Clicked outside contact area.");
+          }
+        });
+
+        // --- Back Button Click Logic ---
+        $backButton.on('click', function () {
+          console.log("Back button clicked!");
+
+          // 1. Remove animation classes
+          $gif.removeClass('gif-animate-forward');
+          $mapContainer.removeClass('contact-view-active'); 
+
+
+          // 2. Re-evaluate panning based on window size
+          // Needs a slight delay to allow CSS transitions to start reversing
+          setTimeout(updatePanningBasedOnSize, 50); // Re-check panning after a small delay
+
+          
+        });
+
+      } else {
+        console.error("Essential elements missing. Hover and click effects setup aborted.");
+      }
+
+    }); // End Document Ready
+
+    console.log("Script end");
+
+  </script>
+</body>
+
+</html>

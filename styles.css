@@ -1,0 +1,216 @@
+/* styles.css - Cleaned and Updated */
+
+:root {
+  /* --bg-color: #ffe9fb; */
+  --bg-color: #ffff; /* Using white */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.hide {
+  display: none !important; /* Utility class to force hiding */
+}
+
+body {
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent body scrollbars */
+  position: relative;
+  background: var(--bg-color);
+  cursor: url('Bathrtubcursor.png'), auto; /* Custom cursor */
+
+  /* --- Flexbox Centering --- */
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;   /* Centers vertically */
+}
+
+#splash {
+  position: absolute;
+  inset: 0; /* Covers entire viewport */
+  z-index: 999; /* Highest layer */
+  background: var(--bg-color);
+  display: grid; /* Simple centering for content */
+  place-items: center;
+}
+
+#splash img {
+  cursor: pointer;
+}
+
+a {
+  color: black; /* Basic link styling */
+}
+
+/* --- Base Button Styling --- */
+button {
+  box-shadow: none;
+  border: 2px solid black;
+  border-top: 0;
+  margin-top: 0;
+  padding: 1.2em 1em .5em;
+  font-family: 'Verdana', sans-serif;
+  font-weight: normal;
+  font-size: 15px;
+  background: var(--bg-color);
+  cursor: pointer; /* Should be overridden by body cursor, but good fallback */
+  transform: translateY(-.8em); /* Initial "raised" state */
+  transition: transform .5s ease;
+}
+
+button:hover {
+  transform: translateY(0); /* Lower on hover */
+}
+
+/* --- Map Container --- */
+.map-container {
+  width: 1024px; /* Fixed width */
+  height: 974px; /* Fixed height */
+  position: relative; /* Positioning context for children */
+  user-select: none; /* Prevent text selection */
+  overflow: hidden; /* IMPORTANT: Hides parts of GIF during animation/panning */
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  cursor: grab; /* Default cursor for panning state */
+  position: relative; /* Positioning context for overlays/images */
+  user-select: none;
+}
+
+/* --- Image Display Logic (Animated vs Static Fallback) --- */
+/* Show animated by default, or static if .anim-off is present */
+#map img#home-animated,
+#map.anim-off img#home-static {
+  display: block;
+}
+
+/* Hide static by default, or animated if .anim-off is present */
+#map img#home-static,
+#map.anim-off img#home-animated {
+  display: none;
+}
+
+/* --- Main Animated GIF --- */
+#map img#home-animated {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cover the area */
+  z-index: 5; /* Layer for the main visual */
+
+  /* --- Animation Transition --- */
+  transition: transform 2s ease-out, opacity 2s ease-out;
+  transform-origin: center center; /* Rotate around center */
+}
+
+
+/* --- Hover Overlays (Positioned above GIF) --- */
+#music-hover-overlay,
+#merch-hover-overlay,
+#contact-hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15; /* Above base GIF */
+  display: none; /* Hidden initially, shown by JS */
+  pointer-events: none; /* Allow clicks/hovers to pass through */
+}
+
+/* --- CONTACT INFO SECTION --- */
+#contact-info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center horizontally and vertically */
+  text-align: center;
+  /* --- Layering --- */
+  /* Positioned above map-container background, but BELOW the animated GIF */
+  z-index: 2;
+  /* Opacity/Visibility are NOT used here - it's always present, just covered */
+}
+
+#contact-info p {
+  margin: 0 0 20px 0; /* Space below email */
+  font-size: 1.2em;
+  font-family: 'Verdana', sans-serif; /* Consistent font */
+}
+
+/* --- Back Button Specific Styles --- */
+#back-button {
+  /* Inherits base button styles */
+  font-size: 0.75em; /* Smaller font */
+  border: 0px solid #ccc; /* Override base border */
+  color: #000;
+  margin-top: 15px; /* Space above button */
+  /* Inherits transform/transition from base button */
+}
+
+
+/* --- Animation States (Added/Removed via JS) --- */
+
+/* State applied to GIF to make it animate away */
+#home-animated.gif-animate-forward {
+  transform: translateX(2000px) rotate(420deg); /* Move far off screen and rotate */
+  opacity: 1; /* Keep opacity or set to 0 to fade out */
+  pointer-events: none; /* Prevent interaction while animating/off-screen */
+}
+
+/* State applied to container when contact info is revealed */
+.map-container.contact-view-active {
+    cursor: default !important; /* Ensure default cursor */
+}
+/* Hide hover overlays when contact view is active */
+.map-container.contact-view-active #music-hover-overlay,
+.map-container.contact-view-active #merch-hover-overlay,
+.map-container.contact-view-active #contact-hover-overlay {
+    display: none !important;
+}
+/* Ensure map cursor is also default */
+.map-container.contact-view-active #map {
+    cursor: default !important;
+}
+
+/* Panning Disabled State (Added/Removed via JS) */
+.panning-disabled {
+  cursor: default !important; /* Override grab cursor */
+}
+.panning-disabled #map {
+   cursor: default !important; /* Ensure map cursor matches */
+}
+
+
+/* --- REDUCED MOTION PREFERENCES --- */
+@media (prefers-reduced-motion) {
+  /* Show static image if available */
+  #map img#home-static {
+    display: block;
+  }
+
+  /* Hide animated image if motion is reduced */
+  #map.anim-off img#home-animated, /* Handle manual toggle */
+  #map img#home-animated {         /* Handle OS setting */
+    display: none;
+  }
+
+  /* Disable transitions on relevant elements */
+  #home-animated,
+  button { /* Includes #back-button */
+    transition: none !important;
+  }
+
+  /* Change animation to simple hide instead of transform */
+   #home-animated.gif-animate-forward {
+      transform: none; /* Prevent movement */
+      opacity: 0; /* Just fade out */
+   }
+}
