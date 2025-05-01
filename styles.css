@@ -22,11 +22,15 @@ body {
   background: var(--bg-color);
   cursor: url('Bathrtubcursor.png'), auto;
 
-  /* --- Flexbox Centering (Crucial for the responsive container) --- */
+  /* --- Flexbox Centering (Crucial) --- */
   display: flex;
+  /* These two center the .map-container IF it's smaller than the body */
   justify-content: center; /* Centers horizontally */
   align-items: center;   /* Centers vertically */
-  padding: 10px; /* Optional: Add some padding to body to ensure container never touches edges */
+
+  /* Add small padding to prevent container sticking to edges */
+  padding: 5px;
+  box-sizing: border-box; /* Include padding in height calculation */
 }
 
 #splash {
@@ -68,34 +72,32 @@ button:hover {
 
 /* --- Map Container --- */
 .map-container {
-  /* --- Responsive Sizing --- */
-  max-width: 1024px; /* Absolute maximum width */
-  max-height: 974px; /* Absolute maximum height (safety net) */
+  /* --- Define Aspect Ratio --- */
+  aspect-ratio: 1024 / 974; /* Target shape */
 
-  /* Use viewport width for scaling, leaving ~5% margin on each side */
-  /* This will shrink the container as the viewport gets narrower */
-  width: 90vw;
+  /* --- Responsive Sizing based on Viewport --- */
+  /* Calculate the width based on fitting within 90% of EITHER vw OR vh,
+     whichever is more limiting, while maintaining aspect ratio. */
+  width: min(95vw, calc(90vh * (1024 / 974))); /* (1024/974) is the aspect ratio width/height */
 
-  /* Set the desired aspect ratio based on your original fixed dimensions */
-  aspect-ratio: 1024 / 974;
-
-  /* Let height be determined by width + aspect-ratio */
+  /* Height is determined automatically by width + aspect-ratio */
   height: auto;
 
+  /* --- Maximum Size Constraints --- */
+  /* Ensure it NEVER exceeds the absolute pixel limits OR 90% of the viewport */
+  max-width: min(1024px, 95vw);
+  max-height: min(974px, 95vh); /* This directly prevents vertical overflow/cropping */
+
   /* --- Minimum Size Constraints --- */
-  /* Approximately half of the max dimensions */
-  min-width: 512px;
-  /* min-height is often implicitly handled by min-width + aspect-ratio,
-     but can be added for robustness if needed: min-height: 487px; */
+  min-width: 512px; /* Approx half width */
+  min-height: 487px; /* Approx half height - good fallback */
 
-  /* --- Original Properties --- */
-  position: relative; /* Positioning context for children */
-  user-select: none; /* Prevent text selection */
-  overflow: hidden; /* IMPORTANT: Hides parts of GIF/content */
-
-  /* Ensures it centers correctly within the flex body */
-  margin-left: auto;
-  margin-right: auto;
+  /* --- Centering & Layout --- */
+  /* margin: auto works WITH the body's flexbox centering */
+  margin: auto; /* Essential for centering within the flex container */
+  position: relative;
+  user-select: none;
+  overflow: hidden; /* Still needed */
 }
 
 #map {
