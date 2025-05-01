@@ -16,16 +16,17 @@
 }
 
 body {
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
   overflow: hidden; /* Prevent body scrollbars */
   position: relative;
   background: var(--bg-color);
-  cursor: url('Bathrtubcursor.png'), auto; /* Custom cursor */
+  cursor: url('Bathrtubcursor.png'), auto;
 
-  /* --- Flexbox Centering --- */
+  /* --- Flexbox Centering (Crucial for the responsive container) --- */
   display: flex;
   justify-content: center; /* Centers horizontally */
   align-items: center;   /* Centers vertically */
+  padding: 10px; /* Optional: Add some padding to body to ensure container never touches edges */
 }
 
 #splash {
@@ -67,18 +68,41 @@ button:hover {
 
 /* --- Map Container --- */
 .map-container {
-  width: 1024px; /* Fixed width */
-  height: 974px; /* Fixed height */
+  /* --- Responsive Sizing --- */
+  max-width: 1024px; /* Absolute maximum width */
+  max-height: 974px; /* Absolute maximum height (safety net) */
+
+  /* Use viewport width for scaling, leaving ~5% margin on each side */
+  /* This will shrink the container as the viewport gets narrower */
+  width: 90vw;
+
+  /* Set the desired aspect ratio based on your original fixed dimensions */
+  aspect-ratio: 1024 / 974;
+
+  /* Let height be determined by width + aspect-ratio */
+  height: auto;
+
+  /* --- Minimum Size Constraints --- */
+  /* Approximately half of the max dimensions */
+  min-width: 512px;
+  /* min-height is often implicitly handled by min-width + aspect-ratio,
+     but can be added for robustness if needed: min-height: 487px; */
+
+  /* --- Original Properties --- */
   position: relative; /* Positioning context for children */
   user-select: none; /* Prevent text selection */
-  overflow: hidden; /* IMPORTANT: Hides parts of GIF during animation/panning */
+  overflow: hidden; /* IMPORTANT: Hides parts of GIF/content */
+
+  /* Ensures it centers correctly within the flex body */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #map {
   width: 100%;
-  height: 100%;
-  cursor: grab; /* Default cursor for panning state */
-  position: relative; /* Positioning context for overlays/images */
+  height: 100%; /* Needs to be 100% to fill the container determined by aspect-ratio */
+  cursor: grab;
+  position: relative;
   user-select: none;
 }
 
@@ -98,17 +122,16 @@ button:hover {
 /* --- Main Animated GIF --- */
 #map img#home-animated {
   display: block;
-  position: absolute;
+  position: absolute; /* Keep absolute positioning within #map */
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Cover the area */
-  z-index: 5; /* Layer for the main visual */
+  width: 100%;     /* Make GIF fill the #map container */
+  height: 100%;    /* Make GIF fill the #map container */
+  object-fit: cover;/* Ensure GIF covers the area, might crop slightly if aspect ratio differs */
+  z-index: 5;
 
-  /* --- Animation Transition --- */
   transition: transform 2s ease-out, opacity 2s ease-out;
-  transform-origin: center center; /* Rotate around center */
+  transform-origin: center center;
 }
 
 
