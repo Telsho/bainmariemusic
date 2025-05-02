@@ -73,20 +73,20 @@ button:hover {
 /* --- Map Container --- */
 .map-container {
   /* --- Define Aspect Ratio --- */
-  aspect-ratio: 957 / 879; /* Target shape */
+  aspect-ratio: 972 / 886; /* Target shape */
 
   /* --- Responsive Sizing based on Viewport --- */
   /* Calculate the width based on fitting within 90% of EITHER vw OR vh,
      whichever is more limiting, while maintaining aspect ratio. */
-  width: min(95vw, calc(95vh * (957 / 879))); /* (1024/974) is the aspect ratio width/height */
+  width: min(95vw, calc(95vh * (972 / 886))); /* (1024/974) is the aspect ratio width/height */
 
   /* Height is determined automatically by width + aspect-ratio */
   height: auto;
 
   /* --- Maximum Size Constraints --- */
   /* Ensure it NEVER exceeds the absolute pixel limits OR 90% of the viewport */
-  max-width: min(957px, 95vw);
-  max-height: min(879px, 95vh); /* This directly prevents vertical overflow/cropping */
+  max-width: min(972px, 95vw);
+  max-height: min(886px, 95vh); /* This directly prevents vertical overflow/cropping */
 
   /* --- Centering & Layout --- */
   /* margin: auto works WITH the body's flexbox centering */
