@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
   <title>Bain Marie Music</title>
+  </head>
 
-</head>
 <body>
   <div id="splash" onclick="this.classList.add('hide')" class="hide">
-     </div>
+  </div>
 
   <div class="map-container">
     <div id="map">
@@ -27,134 +27,18 @@
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="./js/jquery.pan.js"></script>
   <script>
     console.log("Script start");
 
-    // --- Panning Logic ---
-    let isPanInitialized = false; // Flag
-    const $mapContainer = $('.map-container'); // Cache container selector
-    const $map = $('#map'); // Cache map selector
+    // --- Panning Logic Removed ---
+    // Functions initializePanning, disablePanning, updatePanningBasedOnSize removed.
+    // isPanInitialized flag removed.
+    // Resize listener related to panning removed.
 
-    // Function to initialize the panning
-    function initializePanning() {
-      // Check if it's already initialized OR if it *should* be disabled OR if contact view is active
-      if (isPanInitialized || $mapContainer.hasClass('panning-disabled') || $mapContainer.hasClass('contact-view-active')) {
-        console.log("Initialize check: Already initialized, should be disabled, or contact view active. Aborting init.");
-        if ($mapContainer.hasClass('panning-disabled') || $mapContainer.hasClass('contact-view-active')) {
-          isPanInitialized = false; // Ensure flag is correct
-        }
-        return;
-      }
-
-      console.log("Attempting to initialize panning...");
-
-      // Defer calculation slightly to allow layout rendering
-      setTimeout(() => {
-        const containerWidth = $mapContainer.width();
-        const mapWidth = $map.width() || 1500; // Use fallback width matching CSS?
-
-        // Initial position: Attempt top-right alignment
-        const initialX = containerWidth > mapWidth ? containerWidth - mapWidth : 0;
-        const initialY = 0;
-
-        console.log(`Calculated Initial Position: X=${initialX}, Y=${initialY} (Container: ${containerWidth}, Map: ${mapWidth})`);
-
-        try {
-          if ($.fn.pan) {
-            console.log("Calling $mapContainer.pan({...})");
-            $mapContainer.pan({
-              'kineticDamping': 0,
-              'initialPosition': { 'x': initialX, 'y': initialY },
-              'cursor': 'grab'
-              // Add other pan options as needed
-            });
-            $mapContainer.removeClass('panning-disabled'); // Ensure disabled class is removed
-            $mapContainer.css('cursor', 'grab'); // Ensure cursor is correct
-            isPanInitialized = true;
-            console.log("Panning successfully initialized.");
-          } else {
-            console.error("jQuery.fn.pan function not found! Check if jquery.pan.js is loaded correctly.");
-            isPanInitialized = false;
-          }
-        } catch (e) {
-          console.error("Error initializing pan plugin:", e);
-          isPanInitialized = false; // Mark as not initialized if error occurs
-        }
-      }, 50); // Small delay
-    }
-
-    // Function to disable/destroy the panning
-    function disablePanning() {
-      console.log("Attempting to disable panning...");
-      $mapContainer.addClass('panning-disabled'); // Always add class for CSS rules
-      $mapContainer.css('cursor', 'default');   // Set cursor immediately
-
-      if (isPanInitialized) {
-        console.log("Panning was initialized, attempting to destroy/unbind...");
-        try {
-          // --- IMPORTANT: Check jquery.pan.js for a 'destroy' or 'disable' method ---
-          // If a method exists, call it here. Example:
-          // if (typeof $mapContainer.pan === 'function') { // Check if method exists
-          //    $mapContainer.pan('destroy'); // Replace 'destroy' with the actual method name
-          //    console.log("Called .pan('destroy') (or equivalent).");
-          // } else {
-          //    console.log(".pan('destroy') method not found, relying on class and manual unbind if necessary.");
-          // }
-
-          // If no destroy method, you might need to manually unbind events
-          // (Inspect the plugin's source for event namespaces like '.pan')
-          // $mapContainer.off('.pan'); // Example - uncomment and adjust namespace if needed
-          console.log("Manual unbind attempt (if uncommented/needed).");
-
-        } catch (e) {
-          console.error("Error trying to destroy pan instance or unbind events:", e);
-        } finally {
-          isPanInitialized = false; // Mark as not initialized
-          console.log("Panning marked as disabled. Added 'panning-disabled' class.");
-        }
-      } else {
-        console.log("Panning was not marked as initialized, ensuring 'panning-disabled' class is present.");
-      }
-    }
-
-    // Function to check size and enable/disable panning
-    function updatePanningBasedOnSize() {
-      // Don't change panning state if contact info is visible
-      if ($mapContainer.hasClass('contact-view-active')) {
-        console.log("Update Check: Contact view active, skipping pan update.");
-        if (!isPanInitialized) { // Ensure it's disabled if contact view is active but somehow init flag is false
-          disablePanning();
-        }
-        return;
-      }
-
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      console.log(`Update Check: Width=${screenWidth}, Height=${screenHeight}`);
-
-      // Condition to DISABLE panning: Screen is LARGER than 1024x974
-      const shouldBeDisabled = screenWidth > 1024 && screenHeight > 974;
-      console.log(`Should panning be disabled? ${shouldBeDisabled}`);
-
-      if (shouldBeDisabled) {
-        disablePanning();
-      } else {
-        // Only initialize if it's not already
-        if (!isPanInitialized) {
-          // Ensure disabling class is removed *before* attempting init
-          $mapContainer.removeClass('panning-disabled');
-          $mapContainer.css('cursor', 'grab'); // Reset cursor
-          initializePanning();
-        } else {
-          console.log("Panning should be enabled, and it's already initialized.");
-          // Ensure disabling class is removed if somehow present
-          $mapContainer.removeClass('panning-disabled');
-          $mapContainer.css('cursor', 'grab');
-        }
-      }
-    }
-
+    // Cache container selector - still needed for contact view class
+    const $mapContainer = $('.map-container');
+    // Cache map selector - might still be used indirectly or for styling
+    const $map = $('#map');
 
     // --- Document Ready ---
     $(document).ready(function () {
@@ -204,23 +88,15 @@
         console.error("Back button element #back-button not found!");
         allElementsFound = false;
       }
+       if ($mapContainer.length === 0) { // Keep check for mapContainer
+           console.error("Map container element .map-container not found!");
+           allElementsFound = false;
+       }
 
 
-      // --- Initial Panning Check ---
-      console.log("Performing initial size check for panning...");
-      updatePanningBasedOnSize(); // Check panning state on load
+      // --- Initial Panning Check Removed ---
 
-      // --- Resize Listener ---
-      let resizeTimer;
-      $(window).on('resize', function () {
-        console.log("Resize event detected");
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function () {
-          console.log("Debounced resize execution");
-          updatePanningBasedOnSize(); // Re-check panning on resize
-        }, 250);
-      });
-
+      // --- Resize Listener Removed ---
 
       // --- Setup Effects only if all elements exist ---
       if (allElementsFound) {
@@ -233,10 +109,7 @@
           }
 
           const gifOffset = $gif.offset();
-          // Important: Calculate offset *relative to the document*, not the map container,
-          // unless the map container itself is offset in a way that affects pageX/pageY.
-          // If panning moves the #map div, the gifOffset might need adjustment or
-          // calculate relative to the #map's offset. Let's assume standard offset for now.
+          // Calculation remains the same relative to the static GIF
           const mouseX = event.pageX - gifOffset.left;
           const mouseY = event.pageY - gifOffset.top;
 
@@ -288,15 +161,16 @@
           if (isInsideContact) {
             console.log("Contact area clicked!");
 
-            // 1. Disable Panning
-            disablePanning();
+            // 1. Disable Panning - REMOVED
+            // disablePanning();
 
             // 2. Hide all hover overlays explicitly
             hotspots.forEach(spot => {
               $overlays[spot.overlaySelector].hide();
             });
 
-            $mapContainer.css('overflow', 'visible')
+            // This might still be needed depending on your CSS animation/layout
+            $mapContainer.css('overflow', 'visible');
 
             // 3. Add animation classes
             $mapContainer.addClass('contact-view-active'); // Add state to container
@@ -313,14 +187,11 @@
 
           // 1. Remove animation classes
           $gif.removeClass('gif-animate-forward');
-          $mapContainer.removeClass('contact-view-active'); 
+          $mapContainer.removeClass('contact-view-active');
 
+          // 2. Re-evaluate panning based on window size - REMOVED
+          // setTimeout(updatePanningBasedOnSize, 50);
 
-          // 2. Re-evaluate panning based on window size
-          // Needs a slight delay to allow CSS transitions to start reversing
-          setTimeout(updatePanningBasedOnSize, 50); // Re-check panning after a small delay
-
-          
         });
 
       } else {
