@@ -181,7 +181,7 @@ button:hover {
 
 /* State applied to GIF to make it animate away */
 #home-animated.gif-animate-forward {
-  transform: translateX(2000px) rotate(420deg); /* Move far off screen and rotate */
+  transform: translateX(150vw) rotate(420deg); /* Move far off screen and rotate */
   opacity: 1; /* Keep opacity or set to 0 to fade out */
   pointer-events: none; /* Prevent interaction while animating/off-screen */
 }
