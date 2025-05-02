@@ -88,10 +88,6 @@ button:hover {
   max-width: min(957px, 95vw);
   max-height: min(879px, 95vh); /* This directly prevents vertical overflow/cropping */
 
-  /* --- Minimum Size Constraints --- */
-  min-width: 478px; /* Approx half width */
-  min-height: 439px; /* Approx half height - good fallback */
-
   /* --- Centering & Layout --- */
   /* margin: auto works WITH the body's flexbox centering */
   margin: auto; /* Essential for centering within the flex container */
