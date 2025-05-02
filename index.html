@@ -4,9 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Bain Marie Music</title>
-  </head>
+  <link rel="stylesheet" href="styles.css"> <title>Bain Marie Music</title>
+</head>
 
 <body>
   <div id="splash" onclick="this.classList.add('hide')" class="hide">
@@ -30,15 +29,43 @@
   <script>
     console.log("Script start");
 
-    // --- Panning Logic Removed ---
-    // Functions initializePanning, disablePanning, updatePanningBasedOnSize removed.
-    // isPanInitialized flag removed.
-    // Resize listener related to panning removed.
-
-    // Cache container selector - still needed for contact view class
     const $mapContainer = $('.map-container');
-    // Cache map selector - might still be used indirectly or for styling
-    const $map = $('#map');
+    const $map = $('#map'); // May not be strictly needed anymore, but keep for now
+
+    // --- Define Original Image Dimensions ---
+    // Use the dimensions your original x/y coordinates were based on
+    const originalWidth = 957;
+    const originalHeight = 879;
+
+    // --- Define Hotspots using RATIOS relative to original dimensions ---
+    const hotspots = [
+      {
+        name: 'music',
+        overlaySelector: '#music-hover-overlay',
+        xMinRatio: 60 / originalWidth,   // Original xMin / originalWidth
+        xMaxRatio: 290 / originalWidth,  // Original xMax / originalWidth
+        yMinRatio: 400 / originalHeight, // Original yMin / originalHeight
+        yMaxRatio: 480 / originalHeight  // Original yMax / originalHeight
+      },
+      {
+        name: 'merch',
+        overlaySelector: '#merch-hover-overlay',
+        xMinRatio: 540 / originalWidth,
+        xMaxRatio: 750 / originalWidth,
+        yMinRatio: 140 / originalHeight,
+        yMaxRatio: 210 / originalHeight
+      },
+      {
+        name: 'contact',
+        overlaySelector: '#contact-hover-overlay',
+        xMinRatio: 515 / originalWidth,
+        xMaxRatio: 800 / originalWidth,
+        yMinRatio: 675 / originalHeight,
+        yMaxRatio: 735 / originalHeight
+      }
+      // Add more objects here for additional hotspots if needed, using ratios
+    ];
+
 
     // --- Document Ready ---
     $(document).ready(function () {
@@ -48,19 +75,10 @@
       const $contactInfo = $('#contact-info');
       const $backButton = $('#back-button');
 
-      // --- Define ALL Hotspots and their corresponding Overlay Selectors ---
-      const hotspots = [
-        { name: 'music', overlaySelector: '#music-hover-overlay', xMin: 60, xMax: 290, yMin: 400, yMax: 480 },
-        { name: 'merch', overlaySelector: '#merch-hover-overlay', xMin: 540, xMax: 750, yMin: 140, yMax: 210 },
-        { name: 'contact', overlaySelector: '#contact-hover-overlay', xMin: 515, xMax: 800, yMin: 675, yMax: 735 }
-        // Add more objects here for additional hotspots if needed
-      ];
-
-      // Find the contact hotspot data
+      // Find the contact hotspot data (will now contain ratios)
       const contactHotspot = hotspots.find(spot => spot.name === 'contact');
       if (!contactHotspot) {
         console.error("Contact hotspot data not found in the hotspots array!");
-        // Handle error appropriately, maybe disable click functionality
       }
 
       // --- Cache Overlay jQuery Objects ---
@@ -76,47 +94,42 @@
       });
 
       // Check for other essential elements
-      if ($gif.length === 0) {
-        console.error("GIF element #home-animated not found!");
-        allElementsFound = false;
-      }
-      if ($contactInfo.length === 0) {
-        console.error("Contact info element #contact-info not found!");
-        allElementsFound = false;
-      }
-      if ($backButton.length === 0) {
-        console.error("Back button element #back-button not found!");
-        allElementsFound = false;
-      }
-       if ($mapContainer.length === 0) { // Keep check for mapContainer
-           console.error("Map container element .map-container not found!");
-           allElementsFound = false;
-       }
+      if ($gif.length === 0) { console.error("GIF element #home-animated not found!"); allElementsFound = false; }
+      if ($contactInfo.length === 0) { console.error("Contact info element #contact-info not found!"); allElementsFound = false; }
+      if ($backButton.length === 0) { console.error("Back button element #back-button not found!"); allElementsFound = false; }
+      if ($mapContainer.length === 0) { console.error("Map container element .map-container not found!"); allElementsFound = false; }
 
-
-      // --- Initial Panning Check Removed ---
-
-      // --- Resize Listener Removed ---
 
       // --- Setup Effects only if all elements exist ---
       if (allElementsFound) {
 
         // --- Hover Effect Logic ---
         $gif.on('mousemove', function (event) {
-          // Don't show hover effects if contact info is visible
           if ($mapContainer.hasClass('contact-view-active')) {
-            return;
+            return; // Don't show hover if contact view is active
           }
 
+          // Get CURRENT dimensions of the GIF
+          const currentGifWidth = $gif.width();
+          const currentGifHeight = $gif.height();
+          if (currentGifWidth === 0 || currentGifHeight === 0) return; // Avoid division by zero or calculation if hidden/not loaded
+
           const gifOffset = $gif.offset();
-          // Calculation remains the same relative to the static GIF
           const mouseX = event.pageX - gifOffset.left;
           const mouseY = event.pageY - gifOffset.top;
 
-          let activeOverlaySelector = null; // Track active hover
+          let activeOverlaySelector = null;
 
           hotspots.forEach(spot => {
-            const isInside = (mouseX >= spot.xMin && mouseX <= spot.xMax && mouseY >= spot.yMin && mouseY <= spot.yMax);
+            // Calculate CURRENT pixel boundaries based on ratios and current size
+            const currentXMin = spot.xMinRatio * currentGifWidth;
+            const currentXMax = spot.xMaxRatio * currentGifWidth;
+            const currentYMin = spot.yMinRatio * currentGifHeight;
+            const currentYMax = spot.yMaxRatio * currentGifHeight;
+
+            // Check if mouse is within the *current* boundaries
+            const isInside = (mouseX >= currentXMin && mouseX <= currentXMax && mouseY >= currentYMin && mouseY <= currentYMax);
+
             if (isInside) {
               activeOverlaySelector = spot.overlaySelector;
             }
@@ -143,37 +156,43 @@
 
         // --- Click Logic for Contact ---
         $gif.on('click', function (event) {
-          // Don't do anything if contact is already shown
           if ($mapContainer.hasClass('contact-view-active') || !contactHotspot) {
-            return;
+            return; // Don't process click if contact already shown or hotspot missing
           }
 
-          const gifOffset = $gif.offset(); // Recalculate offset on click
+          // Get CURRENT dimensions of the GIF on click
+          const currentGifWidth = $gif.width();
+          const currentGifHeight = $gif.height();
+          if (currentGifWidth === 0 || currentGifHeight === 0) return; // Avoid issues if hidden/not loaded
+
+          const gifOffset = $gif.offset();
           const clickX = event.pageX - gifOffset.left;
           const clickY = event.pageY - gifOffset.top;
 
-          // Check if click is within the CONTACT hotspot
+          // Calculate CURRENT pixel boundaries for the CONTACT hotspot
+          const currentContactXMin = contactHotspot.xMinRatio * currentGifWidth;
+          const currentContactXMax = contactHotspot.xMaxRatio * currentGifWidth;
+          const currentContactYMin = contactHotspot.yMinRatio * currentGifHeight;
+          const currentContactYMax = contactHotspot.yMaxRatio * currentGifHeight;
+
+          // Check if click is within the *current* CONTACT boundaries
           const isInsideContact = (
-            clickX >= contactHotspot.xMin && clickX <= contactHotspot.xMax &&
-            clickY >= contactHotspot.yMin && clickY <= contactHotspot.yMax
+            clickX >= currentContactXMin && clickX <= currentContactXMax &&
+            clickY >= currentContactYMin && clickY <= currentContactYMax
           );
 
           if (isInsideContact) {
             console.log("Contact area clicked!");
 
-            // 1. Disable Panning - REMOVED
-            // disablePanning();
-
-            // 2. Hide all hover overlays explicitly
+            // Hide all hover overlays explicitly
             hotspots.forEach(spot => {
               $overlays[spot.overlaySelector].hide();
             });
 
-            // This might still be needed depending on your CSS animation/layout
-            $mapContainer.css('overflow', 'visible');
+            $mapContainer.css('overflow', 'visible'); // Keep if needed for animation
 
-            // 3. Add animation classes
-            $mapContainer.addClass('contact-view-active'); // Add state to container
+            // Add animation classes
+            $mapContainer.addClass('contact-view-active');
             $gif.addClass('gif-animate-forward');
 
           } else {
@@ -185,13 +204,11 @@
         $backButton.on('click', function () {
           console.log("Back button clicked!");
 
-          // 1. Remove animation classes
+          // Remove animation classes
           $gif.removeClass('gif-animate-forward');
           $mapContainer.removeClass('contact-view-active');
-
-          // 2. Re-evaluate panning based on window size - REMOVED
-          // setTimeout(updatePanningBasedOnSize, 50);
-
+          // Reset overflow if necessary (depends on your CSS)
+          // $mapContainer.css('overflow', 'hidden'); // Example: reset if needed
         });
 
       } else {
