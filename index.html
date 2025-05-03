@@ -4,17 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css"> <title>Bain Marie Music</title>
+  <link rel="stylesheet" href="styles.css">
+  <title>Bain Marie Music</title>
 </head>
 
 <body>
   <div id="splash" onclick="this.classList.add('hide')" class="hide">
-  </div>
+    </div>
 
-  
   <div class="map-container">
     <div id="map">
-      <img src="full_frame.gif" id="home-animated" alt="Animated Map">
+      <video id="home-animated" autoplay loop muted playsinline>
+        <source src="full_frame.mp4" type="video/mp4">
+        Your browser does not support the video tag. Maybe update it?
+      </video>
       <img src="MUSIC_hover.png" id="music-hover-overlay" alt="Music Area Hover">
       <img src="MERCH_hover.png" id="merch-hover-overlay" alt="Merch Area Hover">
       <img src="CONTACT_hover.png" id="contact-hover-overlay" alt="Contact Area Hover">
@@ -72,7 +75,8 @@
     $(document).ready(function () {
       console.log("Document ready");
 
-      const $gif = $('#home-animated');
+      // === SELECTOR REMAINS THE SAME - Now selects the <video> ===
+      const $animatedElement = $('#home-animated');
       const $contactInfo = $('#contact-info');
       const $backButton = $('#back-button');
 
@@ -95,7 +99,8 @@
       });
 
       // Check for other essential elements
-      if ($gif.length === 0) { console.error("GIF element #home-animated not found!"); allElementsFound = false; }
+      // === Updated check message slightly ===
+      if ($animatedElement.length === 0) { console.error("Animated element #home-animated (now video) not found!"); allElementsFound = false; }
       if ($contactInfo.length === 0) { console.error("Contact info element #contact-info not found!"); allElementsFound = false; }
       if ($backButton.length === 0) { console.error("Back button element #back-button not found!"); allElementsFound = false; }
       if ($mapContainer.length === 0) { console.error("Map container element .map-container not found!"); allElementsFound = false; }
@@ -105,28 +110,29 @@
       if (allElementsFound) {
 
         // --- Hover Effect Logic ---
-        $gif.on('mousemove', function (event) {
+        // === Changed variable name from $gif to $animatedElement for clarity ===
+        $animatedElement.on('mousemove', function (event) {
           if ($mapContainer.hasClass('contact-view-active')) {
             return; // Don't show hover if contact view is active
           }
 
-          // Get CURRENT dimensions of the GIF
-          const currentGifWidth = $gif.width();
-          const currentGifHeight = $gif.height();
-          if (currentGifWidth === 0 || currentGifHeight === 0) return; // Avoid division by zero or calculation if hidden/not loaded
+          // Get CURRENT dimensions of the VIDEO
+          const currentElementWidth = $animatedElement.width();
+          const currentElementHeight = $animatedElement.height();
+          if (currentElementWidth === 0 || currentElementHeight === 0) return; // Avoid division by zero or calculation if hidden/not loaded
 
-          const gifOffset = $gif.offset();
-          const mouseX = event.pageX - gifOffset.left;
-          const mouseY = event.pageY - gifOffset.top;
+          const elementOffset = $animatedElement.offset();
+          const mouseX = event.pageX - elementOffset.left;
+          const mouseY = event.pageY - elementOffset.top;
 
           let activeOverlaySelector = null;
 
           hotspots.forEach(spot => {
             // Calculate CURRENT pixel boundaries based on ratios and current size
-            const currentXMin = spot.xMinRatio * currentGifWidth;
-            const currentXMax = spot.xMaxRatio * currentGifWidth;
-            const currentYMin = spot.yMinRatio * currentGifHeight;
-            const currentYMax = spot.yMaxRatio * currentGifHeight;
+            const currentXMin = spot.xMinRatio * currentElementWidth;
+            const currentXMax = spot.xMaxRatio * currentElementWidth;
+            const currentYMin = spot.yMinRatio * currentElementHeight;
+            const currentYMax = spot.yMaxRatio * currentElementHeight;
 
             // Check if mouse is within the *current* boundaries
             const isInside = (mouseX >= currentXMin && mouseX <= currentXMax && mouseY >= currentYMin && mouseY <= currentYMax);
@@ -148,33 +154,33 @@
         });
 
         // --- Mouse Leave Logic for Hover ---
-        $gif.on('mouseleave', function () {
-          // Hide ALL overlays when mouse leaves the GIF
+        $animatedElement.on('mouseleave', function () {
+          // Hide ALL overlays when mouse leaves the element
           hotspots.forEach(spot => {
             $overlays[spot.overlaySelector].hide();
           });
         });
 
         // --- Click Logic for Contact ---
-        $gif.on('click', function (event) {
+        $animatedElement.on('click', function (event) {
           if ($mapContainer.hasClass('contact-view-active') || !contactHotspot) {
             return; // Don't process click if contact already shown or hotspot missing
           }
 
-          // Get CURRENT dimensions of the GIF on click
-          const currentGifWidth = $gif.width();
-          const currentGifHeight = $gif.height();
-          if (currentGifWidth === 0 || currentGifHeight === 0) return; // Avoid issues if hidden/not loaded
+          // Get CURRENT dimensions of the VIDEO on click
+          const currentElementWidth = $animatedElement.width();
+          const currentElementHeight = $animatedElement.height();
+          if (currentElementWidth === 0 || currentElementHeight === 0) return; // Avoid issues if hidden/not loaded
 
-          const gifOffset = $gif.offset();
-          const clickX = event.pageX - gifOffset.left;
-          const clickY = event.pageY - gifOffset.top;
+          const elementOffset = $animatedElement.offset();
+          const clickX = event.pageX - elementOffset.left;
+          const clickY = event.pageY - elementOffset.top;
 
           // Calculate CURRENT pixel boundaries for the CONTACT hotspot
-          const currentContactXMin = contactHotspot.xMinRatio * currentGifWidth;
-          const currentContactXMax = contactHotspot.xMaxRatio * currentGifWidth;
-          const currentContactYMin = contactHotspot.yMinRatio * currentGifHeight;
-          const currentContactYMax = contactHotspot.yMaxRatio * currentGifHeight;
+          const currentContactXMin = contactHotspot.xMinRatio * currentElementWidth;
+          const currentContactXMax = contactHotspot.xMaxRatio * currentElementWidth;
+          const currentContactYMin = contactHotspot.yMinRatio * currentElementHeight;
+          const currentContactYMax = contactHotspot.yMaxRatio * currentElementHeight;
 
           // Check if click is within the *current* CONTACT boundaries
           const isInsideContact = (
@@ -192,9 +198,9 @@
 
             $mapContainer.css('overflow', 'visible'); // Keep if needed for animation
 
-            // Add animation classes
+            // Add animation classes (now applied to the video)
             $mapContainer.addClass('contact-view-active');
-            $gif.addClass('gif-animate-forward');
+            $animatedElement.addClass('gif-animate-forward'); // Renamed class in CSS below
 
           } else {
             console.log("Clicked outside contact area.");
@@ -205,8 +211,8 @@
         $backButton.on('click', function () {
           console.log("Back button clicked!");
 
-          // Remove animation classes
-          $gif.removeClass('gif-animate-forward');
+          // Remove animation classes (now from the video)
+          $animatedElement.removeClass('gif-animate-forward');
           $mapContainer.removeClass('contact-view-active');
           // Reset overflow if necessary (depends on your CSS)
           // $mapContainer.css('overflow', 'hidden'); // Example: reset if needed

@@ -1,4 +1,4 @@
-/* styles.css - Cleaned and Updated */
+/* styles.css - Updated for Video */
 
 :root {
   /* --bg-color: #ffe9fb; */
@@ -42,7 +42,7 @@ body {
   place-items: center;
 }
 
-#splash img {
+#splash img { /* Assuming splash might still use images */
   cursor: pointer;
 }
 
@@ -76,64 +76,51 @@ button:hover {
   aspect-ratio: 972 / 886; /* Target shape */
 
   /* --- Responsive Sizing based on Viewport --- */
-  /* Calculate the width based on fitting within 90% of EITHER vw OR vh,
-     whichever is more limiting, while maintaining aspect ratio. */
-  width: min(95vw, calc(95vh * (972 / 886))); /* (1024/974) is the aspect ratio width/height */
+  width: min(95vw, calc(95vh * (972 / 886)));
 
   /* Height is determined automatically by width + aspect-ratio */
   height: auto;
 
   /* --- Maximum Size Constraints --- */
-  /* Ensure it NEVER exceeds the absolute pixel limits OR 90% of the viewport */
   max-width: min(972px, 95vw);
-  max-height: min(886px, 95vh); /* This directly prevents vertical overflow/cropping */
+  max-height: min(886px, 95vh);
 
   /* --- Centering & Layout --- */
-  /* margin: auto works WITH the body's flexbox centering */
-  margin: auto; /* Essential for centering within the flex container */
+  margin: auto;
   position: relative;
   user-select: none;
-  overflow: hidden; /* Still needed */
+  overflow: hidden; /* Still needed initially */
 }
 
 #map {
   width: 100%;
-  height: 100%; /* Needs to be 100% to fill the container determined by aspect-ratio */
-  cursor: grab;
+  height: 100%; /* Needs to be 100% to fill the container */
+  cursor: grab; /* Will be overridden when contact view is active */
   position: relative;
   user-select: none;
 }
 
-/* --- Image Display Logic (Animated vs Static Fallback) --- */
-/* Show animated by default, or static if .anim-off is present */
-#map img#home-animated,
-#map.anim-off img#home-static {
+/* --- Main Animated Video --- */
+/* === UPDATED SELECTOR: Changed from img#home-animated to video#home-animated === */
+#map video#home-animated {
   display: block;
-}
-
-/* Hide static by default, or animated if .anim-off is present */
-#map img#home-static,
-#map.anim-off img#home-animated {
-  display: none;
-}
-
-/* --- Main Animated GIF --- */
-#map img#home-animated {
-  display: block;
-  position: absolute; /* Keep absolute positioning within #map */
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;     /* Make GIF fill the #map container */
-  height: 100%;    /* Make GIF fill the #map container */
-  object-fit: cover;/* Ensure GIF covers the area, might crop slightly if aspect ratio differs */
-  z-index: 5;
+  width: 100%;      /* Make video fill the #map container */
+  height: 100%;     /* Make video fill the #map container */
+  object-fit: cover;/* Ensure video covers the area, cropping if aspect ratio differs */
+  z-index: 5;       /* Base layer within #map */
 
+  /* Animation properties */
   transition: transform 2s ease-out, opacity 2s ease-out;
   transform-origin: center center;
+  pointer-events: auto; /* Allow mouse events on the video */
 }
 
 
-/* --- Hover Overlays (Positioned above GIF) --- */
+/* --- Hover Overlays (Positioned above Video) --- */
+/* These remain images */
 #music-hover-overlay,
 #merch-hover-overlay,
 #contact-hover-overlay {
@@ -142,9 +129,9 @@ button:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 15; /* Above base GIF */
+  z-index: 15; /* Above base video */
   display: none; /* Hidden initially, shown by JS */
-  pointer-events: none; /* Allow clicks/hovers to pass through */
+  pointer-events: none; /* Allow clicks/hovers to pass through to the video */
 }
 
 /* --- CONTACT INFO SECTION --- */
@@ -154,35 +141,34 @@ button:hover {
   left: 50%;
   transform: translate(-50%, -50%); /* Center horizontally and vertically */
   text-align: center;
-  /* --- Layering --- */
-  /* Positioned above map-container background, but BELOW the animated GIF */
+  /* Positioned logically "behind" the video when it's visible */
   z-index: 2;
   /* Opacity/Visibility are NOT used here - it's always present, just covered */
 }
 
 #contact-info p {
-  margin: 0 0 20px 0; /* Space below email */
+  margin: 0 0 20px 0;
   font-size: 1.2em;
-  font-family: 'Verdana', sans-serif; /* Consistent font */
+  font-family: 'Verdana', sans-serif;
 }
 
 /* --- Back Button Specific Styles --- */
 #back-button {
-  /* Inherits base button styles */
-  font-size: 0.75em; /* Smaller font */
-  border: 0px solid #ccc; /* Override base border */
+  font-size: 0.75em;
+  border: 0px solid #ccc;
   color: #000;
-  margin-top: 15px; /* Space above button */
+  margin-top: 15px;
   /* Inherits transform/transition from base button */
 }
 
 
 /* --- Animation States (Added/Removed via JS) --- */
 
-/* State applied to GIF to make it animate away */
-#home-animated.gif-animate-forward {
+/* State applied to VIDEO to make it animate away */
+/* === UPDATED SELECTOR and CLASS NAME for clarity === */
+#home-animated.gif-animate-forward { /* Kept class name for simplicity, applies to video now */
   transform: translateX(150vw) rotate(420deg); /* Move far off screen and rotate */
-  opacity: 1; /* Keep opacity or set to 0 to fade out */
+  opacity: 0; /* Fade out completely during animation */
   pointer-events: none; /* Prevent interaction while animating/off-screen */
 }
 
@@ -200,8 +186,14 @@ button:hover {
 .map-container.contact-view-active #map {
     cursor: default !important;
 }
+/* === Ensure video cursor doesn't interfere === */
+.map-container.contact-view-active #map video#home-animated {
+    cursor: default !important;
+    pointer-events: none; /* Make sure clicks don't register on video when contact shown */
+}
 
-/* Panning Disabled State (Added/Removed via JS) */
+
+/* Panning Disabled State (If you were using it - kept for reference) */
 .panning-disabled {
   cursor: default !important; /* Override grab cursor */
 }
@@ -212,26 +204,20 @@ button:hover {
 
 /* --- REDUCED MOTION PREFERENCES --- */
 @media (prefers-reduced-motion) {
-  /* Show static image if available */
-  #map img#home-static {
-    display: block;
-  }
-
-  /* Hide animated image if motion is reduced */
-  #map.anim-off img#home-animated, /* Handle manual toggle */
-  #map img#home-animated {         /* Handle OS setting */
-    display: none;
-  }
+  /* Removed static image logic as it's less relevant for video */
 
   /* Disable transitions on relevant elements */
-  #home-animated,
+  /* === UPDATED SELECTOR === */
+  #home-animated, /* Targets the video now */
   button { /* Includes #back-button */
     transition: none !important;
   }
 
   /* Change animation to simple hide instead of transform */
-   #home-animated.gif-animate-forward {
+  /* === UPDATED SELECTOR === */
+  #home-animated.gif-animate-forward { /* Class now applied to video */
       transform: none; /* Prevent movement */
       opacity: 0; /* Just fade out */
+      pointer-events: none; /* Still needed */
    }
 }
