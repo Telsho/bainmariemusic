@@ -1,4 +1,5 @@
-// script.js - Combined Logic (Including Merch)
+// script.js - Combined Logic (Including Merch & Updated Music Animation)
+// Last updated: 2025-05-05 (Based on conversation)
 
 console.log("Script start");
 
@@ -15,17 +16,19 @@ $(document).ready(function () {
 
     const $musicVideoElement = $('#music-video'); // Music forward animation
     const $musicVideoReverseElement = $('#music-video-reverse'); // Music reverse animation
-    const $musicFrameContainer = $('#music-iframe-container');
+    const $musicFrameContainer = $('#music-iframe-container'); // Inner container for iframe/button
+    const $musicPlayerWrapper = $('#music-player-wrapper');   // *** The outer wrapper for visibility/clipping ***
     const $musicIframe = $('#music-iframe');
     const $musicBackButton = $('#music-back-button'); // Music back button
 
-    // *** NEW: Merch Elements ***
+    // Merch Elements
     const $merchVideoElement = $('#merch-video'); // Merch forward animation
     const $merchVideoReverseElement = $('#merch-video-reverse'); // Merch reverse animation
     const $merchContentContainer = $('#merch-content-container'); // Merch widget container
     const $merchBackButton = $('#merch-back-button'); // Merch back button
 
     // --- Original Dimensions (Check if these are still correct for your map image/video) ---
+    // Note: These ratios are used for hover/click detection, ensure they match your map overlay PNGs
     const originalWidth = 957;
     const originalHeight = 879;
 
@@ -37,7 +40,7 @@ $(document).ready(function () {
     ];
     const contactHotspot = hotspots.find(spot => spot.name === 'contact');
     const musicHotspot = hotspots.find(spot => spot.name === 'music');
-    const merchHotspot = hotspots.find(spot => spot.name === 'merch'); // *** NEW ***
+    const merchHotspot = hotspots.find(spot => spot.name === 'merch');
 
     // --- Cache Overlay jQuery Objects & Check Elements ---
     const $overlays = {};
@@ -54,20 +57,22 @@ $(document).ready(function () {
     if ($animatedElement.length === 0) { console.error("Animated element #home-animated not found!"); allElementsFound = false; }
     if ($contactInfo.length === 0) { console.error("Contact info #contact-info not found!"); allElementsFound = false; }
     if ($backButton.length === 0) { console.error("Contact back button #back-button not found!"); allElementsFound = false; }
+    // Music elements
     if ($musicVideoElement.length === 0) { console.error("Music video #music-video not found!"); allElementsFound = false; }
     if ($musicVideoReverseElement.length === 0) { console.error("Reverse music video #music-video-reverse not found!"); allElementsFound = false; }
     if ($musicFrameContainer.length === 0) { console.error("Music iframe container #music-iframe-container not found!"); allElementsFound = false; }
+    if ($musicPlayerWrapper.length === 0) { console.error("Music player wrapper #music-player-wrapper not found!"); allElementsFound = false; } // *** Check Wrapper ***
     if ($musicIframe.length === 0) { console.error("Music iframe #music-iframe not found!"); allElementsFound = false; }
     if ($musicBackButton.length === 0) { console.error("Music back button #music-back-button not found!"); allElementsFound = false; }
-    // *** NEW: Check Merch Elements ***
+    // Merch elements
     if ($merchVideoElement.length === 0) { console.error("Merch video #merch-video not found!"); allElementsFound = false; }
     if ($merchVideoReverseElement.length === 0) { console.error("Reverse merch video #merch-video-reverse not found!"); allElementsFound = false; }
     if ($merchContentContainer.length === 0) { console.error("Merch content container #merch-content-container not found!"); allElementsFound = false; }
     if ($merchBackButton.length === 0) { console.error("Merch back button #merch-back-button not found!"); allElementsFound = false; }
-
+    // Hotspot data
     if (!contactHotspot) { console.error("Contact hotspot data not found!"); allElementsFound = false; }
     if (!musicHotspot) { console.error("Music hotspot data not found!"); allElementsFound = false; }
-    if (!merchHotspot) { console.error("Merch hotspot data not found!"); allElementsFound = false; } // *** NEW ***
+    if (!merchHotspot) { console.error("Merch hotspot data not found!"); allElementsFound = false; }
 
 
     // --- Setup Effects only if all elements exist ---
@@ -76,7 +81,6 @@ $(document).ready(function () {
         const homeVideo = $animatedElement[0];
         const musicVideo = $musicVideoElement[0];
         const musicVideoReverse = $musicVideoReverseElement[0];
-        // *** NEW: Merch Video DOM Elements ***
         const merchVideo = $merchVideoElement[0];
         const merchVideoReverse = $merchVideoReverseElement[0];
 
@@ -85,17 +89,19 @@ $(document).ready(function () {
         // --- Hover Effect Logic ---
         $animatedElement.on('mousemove', function (event) {
             // Ignore hover if a view is active or a transition is happening
-            if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) { // *** ADDED merch-view-active check ***
+            if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) {
                 hotspots.forEach(spot => $overlays[spot.overlaySelector].hide());
                 return;
             }
-            // ... (rest of hover logic remains the same)
+
             const currentElementWidth = $animatedElement.width();
             const currentElementHeight = $animatedElement.height();
             if (currentElementWidth === 0 || currentElementHeight === 0) return;
+
             const elementOffset = $animatedElement.offset();
             const mouseX = event.pageX - elementOffset.left;
             const mouseY = event.pageY - elementOffset.top;
+
             let activeOverlaySelector = null;
             hotspots.forEach(spot => {
                 const currentXMin = spot.xMinRatio * currentElementWidth;
@@ -103,33 +109,39 @@ $(document).ready(function () {
                 const currentYMin = spot.yMinRatio * currentElementHeight;
                 const currentYMax = spot.yMaxRatio * currentElementHeight;
                 const isInside = (mouseX >= currentXMin && mouseX <= currentXMax && mouseY >= currentYMin && mouseY <= currentYMax);
-                if (isInside) { activeOverlaySelector = spot.overlaySelector; }
+                if (isInside) {
+                    activeOverlaySelector = spot.overlaySelector;
+                }
             });
+
             hotspots.forEach(spot => {
                 const $overlay = $overlays[spot.overlaySelector];
-                if (spot.overlaySelector === activeOverlaySelector) $overlay.show();
-                else $overlay.hide();
+                if (spot.overlaySelector === activeOverlaySelector) {
+                    $overlay.show();
+                } else {
+                    $overlay.hide();
+                }
             });
         });
 
         // --- Mouse Leave Logic ---
         $animatedElement.on('mouseleave', function () {
-             if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) return; // *** ADDED merch-view-active check ***
+             if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) return;
              hotspots.forEach(spot => $overlays[spot.overlaySelector].hide());
         });
 
         // --- Click Logic (Handles Contact, Music & Merch) ---
         $animatedElement.on('click', function (event) {
             // Ignore clicks if a view is active or a transition is happening
-            if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) { // *** ADDED merch-view-active check ***
+            if ($mapContainer.hasClass('contact-view-active') || $mapContainer.hasClass('music-view-active') || $mapContainer.hasClass('merch-view-active') || isTransitioning) {
                 console.log("Click ignored: Already in an active view or transition.");
                 return;
             }
 
-            // ... (rest of click coordinate calculation remains the same)
             const currentElementWidth = $animatedElement.width();
             const currentElementHeight = $animatedElement.height();
             if (currentElementWidth === 0 || currentElementHeight === 0) return;
+
             const elementOffset = $animatedElement.offset();
             const clickX = event.pageX - elementOffset.left;
             const clickY = event.pageY - elementOffset.top;
@@ -146,10 +158,11 @@ $(document).ready(function () {
                 isTransitioning = true; // Start transition
                 hotspots.forEach(spot => $overlays[spot.overlaySelector].hide());
                 $mapContainer.addClass('contact-view-active'); // Hides home via CSS
-                // $body.addClass('contact-info-hidden'); // Add if needed
                 $animatedElement.addClass('gif-animate-forward'); // Animate home video out
-                // Contact info display is handled by CSS/HTML structure (not hidden by default)
-                setTimeout(() => { isTransitioning = false; }, 500); // Adjust timeout based on CSS transition/animation
+                // Contact info appears automatically (not hidden by default)
+                setTimeout(() => {
+                    isTransitioning = false; // End transition after potential CSS animation
+                }, 500); // Adjust timeout based on CSS transition/animation duration
                 return; // Action handled
             }
 
@@ -176,17 +189,17 @@ $(document).ready(function () {
                 $musicVideoElement.removeClass('hide');
                 console.log("Forward music video reset to 0 and revealed.");
 
-                setTimeout(() => {
+                setTimeout(() => { // Use timeout 0 to ensure DOM updates apply before play
                     if (isTransitioning && $mapContainer.hasClass('music-view-active')) {
                         console.log("Timeout(0) fired: Playing forward music video.");
-                        musicVideo.muted = false;
+                        musicVideo.muted = false; // Play with sound
                         musicVideo.loop = false;
                         musicVideo.play().then(() => {
                             console.log("Music video playing forward initiated.");
                         }).catch(error => {
                             console.error("Error playing forward music video:", error);
                             isTransitioning = false;
-                            resetToDefaultView('music', true); // Force reset
+                            resetToDefaultView('music', true); // Force reset on error
                         });
                     } else {
                        console.log("Timeout(0) skipped for music: State changed.");
@@ -196,11 +209,14 @@ $(document).ready(function () {
                 // Listener for when music video FINISHES
                 musicVideo.onended = function () {
                     console.log("Forward music animation finished.");
-                    musicVideo.onended = null;
+                    musicVideo.onended = null; // Clean up listener
                     if ($mapContainer.hasClass('music-view-active')) { // Check if still in music view
-                       $animatedElement.removeClass('on-top'); // Re-ensure home video z-index
-                       $musicFrameContainer.addClass('iframe-visible'); // Show iframe
-                       isTransitioning = false; // End transition state
+                        $animatedElement.removeClass('on-top'); // Re-ensure home video z-index
+
+                        // *** SHOW THE MUSIC PLAYER WRAPPER ***
+                        $musicPlayerWrapper.addClass('player-visible'); // CSS handles inner slide-up
+
+                        isTransitioning = false; // End transition state
                     } else {
                         console.log("Music video ended, but view was already reset.");
                         isTransitioning = false; // Still end transition state
@@ -209,7 +225,7 @@ $(document).ready(function () {
                 return; // Action handled
             }
 
-            // *** NEW: 3. Check MERCH Click ***
+            // 3. Check MERCH Click
             const currentMerchXMin = merchHotspot.xMinRatio * currentElementWidth;
             const currentMerchXMax = merchHotspot.xMaxRatio * currentElementWidth;
             const currentMerchYMin = merchHotspot.yMinRatio * currentElementHeight;
@@ -225,17 +241,17 @@ $(document).ready(function () {
                 $mapContainer.addClass('merch-view-active'); // CSS hides home video
 
                 // Prepare merch video FORWARD
-                merchVideo.onended = null; // Clear previous listener
+                merchVideo.onended = null;
                 merchVideo.pause();
                 merchVideo.currentTime = 0;
                 $merchVideoElement.removeClass('hide');
 
-                setTimeout(() => {
+                setTimeout(() => { // Timeout 0
                     if (isTransitioning && $mapContainer.hasClass('merch-view-active')) {
                         console.log("Timeout(0) fired: Playing forward merch video.");
-                        merchVideo.muted = false; // Play with sound if desired
+                        merchVideo.muted = false;
                         merchVideo.loop = false;
-                        merchVideo.playbackRate = 1.5;
+                        merchVideo.playbackRate = 1.5; // Optional speed change
                         merchVideo.play().then(() => {
                             console.log("Merch video playing forward initiated.");
                         }).catch(error => {
@@ -253,12 +269,12 @@ $(document).ready(function () {
                     console.log("Forward merch animation finished.");
                     merchVideo.onended = null;
                      if ($mapContainer.hasClass('merch-view-active')) { // Check if still in merch view
-                        $animatedElement.removeClass('on-top'); // Re-ensure home video z-index
-                        $merchContentContainer.addClass('merch-visible'); // Show merch content
+                        $animatedElement.removeClass('on-top');
+                        $merchContentContainer.addClass('merch-visible'); // Show merch content (fade)
                         isTransitioning = false; // End transition state
                      } else {
                          console.log("Merch video ended, but view was already reset.");
-                         isTransitioning = false; // Still end transition state
+                         isTransitioning = false;
                      }
                 };
                 return; // Action handled
@@ -276,158 +292,157 @@ $(document).ready(function () {
                 console.log("Reset ignored: Transition already in progress.");
                 return;
             }
-            isTransitioning = true;
+            isTransitioning = true; // Set flag for the whole reset sequence
             console.log(`Resetting to default view from: ${source}`);
 
             // --- Actions specific to resetting from MUSIC view ---
             if (source === 'music') {
-                $musicFrameContainer.removeClass('iframe-visible'); // Hide iframe
 
-                // Pause/hide forward music video
-                musicVideo.pause();
-                musicVideo.currentTime = 0;
-                $musicVideoElement.addClass('hide');
-                console.log("Forward music video paused, reset, hidden.");
+                // 1. START INNER CONTAINER'S SLIDE-DOWN & KEEP WRAPPER VISIBLE
+                console.log("Music Reset: Triggering player slide-down.");
+                // Removing 'player-visible' starts the INNER container's CSS transform transition
+                $musicPlayerWrapper.removeClass('player-visible');
+                // ADD temporary class to keep the WRAPPER visible via CSS override
+                $musicPlayerWrapper.addClass('keep-visible-during-slide');
 
-                // Prepare home video state BEFORE playing reverse
-                $animatedElement.removeClass('on-top hide gif-animate-forward');
+                // 2. CALCULATE DURATION (based on CSS: 0.6s = 600ms)
+                const slideDownDurationMs = 600; // *** MATCH CSS transition duration ***
 
-                // Prepare and play the REVERSE music video
-                console.log("Playing reverse music video.");
-                musicVideoReverse.onended = null;
-                $musicVideoReverseElement.removeClass('hide'); // Show reverse video
-                musicVideoReverse.currentTime = 0;
-                musicVideoReverse.muted = false; // Play with sound if desired
-                musicVideoReverse.playbackRate = 2; // Speed up reverse
+                // 3. WAIT FOR SLIDE-DOWN TO FINISH
+                setTimeout(() => {
+                    console.log("Music Reset: Player slide-down finished (timeout).");
 
-                musicVideoReverse.play().then(() => {
-                    musicVideoReverse.onended = function() {
-                        console.log("Reverse music video finished.");
-                        musicVideoReverse.onended = null;
-                        musicVideoReverse.playbackRate = 1.0;
-                        musicVideoReverse.pause();
-                        musicVideoReverse.currentTime = 0;
-                        $musicVideoReverseElement.addClass('hide'); // Hide after playing
+                    // *** Important: NOW remove the temporary visibility class from the WRAPPER ***
+                    $musicPlayerWrapper.removeClass('keep-visible-during-slide');
 
-                        // Bring home video TO FRONT after reverse finishes
-                        $animatedElement.addClass('on-top');
-                        performCommonResetTasks(); // Cleanup classes & play home video
-                        isTransitioning = false; // End transition
-                    };
-                }).catch(error => {
-                     console.error("Error playing reverse music video:", error);
-                     musicVideoReverse.playbackRate = 1.0;
-                     musicVideoReverse.pause();
-                     musicVideoReverse.currentTime = 0;
-                     $musicVideoReverseElement.addClass('hide'); // Hide on error too
-                     // Bring home video to top even on error
-                     $animatedElement.addClass('on-top');
-                     performCommonResetTasks();
-                     isTransitioning = false;
-                });
+                    // 4. PERFORM ACTIONS *AFTER* SLIDE-DOWN AND WRAPPER IS HIDDEN
+                    // Pause/hide forward music video
+                    musicVideo.pause();
+                    musicVideo.currentTime = 0;
+                    $musicVideoElement.addClass('hide');
+                    console.log("Forward music video paused, reset, hidden.");
 
-            // *** NEW: Actions specific to resetting from MERCH view ***
+                    // Prepare home video state BEFORE playing reverse background
+                    $animatedElement.removeClass('on-top hide gif-animate-forward');
+
+                    // Prepare and play the REVERSE background video
+                    console.log("Playing reverse background music video.");
+                    musicVideoReverse.onended = null;
+                    $musicVideoReverseElement.removeClass('hide');
+                    musicVideoReverse.currentTime = 0;
+                    musicVideoReverse.muted = false;
+                    musicVideoReverse.loop = false;
+                    musicVideoReverse.playbackRate = 2;
+
+                    musicVideoReverse.play().then(() => {
+                        // 5. ACTIONS *AFTER* REVERSE BACKGROUND VIDEO FINISHES
+                        musicVideoReverse.onended = function() {
+                            console.log("Reverse background music video finished.");
+                            musicVideoReverse.onended = null;
+                            musicVideoReverse.playbackRate = 1.0;
+                            musicVideoReverse.pause();
+                            musicVideoReverse.currentTime = 0;
+                            $musicVideoReverseElement.addClass('hide');
+                            $animatedElement.addClass('on-top');
+                            performCommonResetTasks();
+                            console.log("Music reset sequence complete.");
+                            isTransitioning = false; // <<< END transition flag HERE
+                        };
+                    }).catch(error => {
+                         console.error("Error playing reverse background music video:", error);
+                         // Ensure temporary class is removed on error too
+                         $musicPlayerWrapper.removeClass('keep-visible-during-slide');
+                         musicVideoReverse.playbackRate = 1.0;
+                         musicVideoReverse.pause();
+                         musicVideoReverse.currentTime = 0;
+                         $musicVideoReverseElement.addClass('hide');
+                         $animatedElement.addClass('on-top');
+                         performCommonResetTasks();
+                         console.error("Music reset sequence completed with error.");
+                         isTransitioning = false; // <<< END transition flag HERE on error too
+                    });
+
+                }, slideDownDurationMs); // End of setTimeout waiting for slide-down
+
+            // --- Actions for CONTACT view ---
+            } else if (source === 'contact') {
+                // ... (Contact logic remains the same) ...
+                 console.log("Contact Reset: Performing immediate reset.");
+                 $animatedElement.removeClass('gif-animate-forward');
+                 $animatedElement.removeClass('hide on-top');
+                 performCommonResetTasks();
+                 isTransitioning = false;
+
+            // --- Actions for MERCH view ---
             } else if (source === 'merch') {
-                 $merchContentContainer.removeClass('merch-visible'); // Hide merch content
-
-                 // Pause/hide forward merch video
-                 merchVideo.pause();
-                 merchVideo.currentTime = 0;
-                 $merchVideoElement.addClass('hide');
-                 console.log("Forward merch video paused, reset, hidden.");
-
-                 // Prepare home video state BEFORE playing reverse
-                 $animatedElement.removeClass('on-top hide gif-animate-forward');
-
-                 // Prepare and play the REVERSE merch video
-                 console.log("Playing reverse merch video.");
-                 merchVideoReverse.onended = null;
-                 $merchVideoReverseElement.removeClass('hide'); // Show reverse video
-                 merchVideoReverse.currentTime = 0;
-                 merchVideoReverse.muted = false; // Play with sound if desired
-                 merchVideoReverse.playbackRate = 2; // Optional: Speed up reverse
-
-                 merchVideoReverse.play().then(() => {
-                    merchVideoReverse.onended = function() {
-                        console.log("Reverse merch video finished.");
-                        merchVideoReverse.onended = null;
+                // ... (Merch logic remains the same as previous step) ...
+                 console.log("Merch Reset: Hiding content and playing reverse video.");
+                 $merchContentContainer.removeClass('merch-visible');
+                 const fadeOutDurationMs = 100; // Matches the 0.1s transition in CSS
+                 setTimeout(() => {
+                    merchVideo.pause();
+                    merchVideo.currentTime = 0;
+                    $merchVideoElement.addClass('hide');
+                    $animatedElement.removeClass('on-top hide gif-animate-forward');
+                    merchVideoReverse.onended = null;
+                    $merchVideoReverseElement.removeClass('hide');
+                    merchVideoReverse.currentTime = 0;
+                    merchVideoReverse.muted = false;
+                    merchVideoReverse.loop = false;
+                    merchVideoReverse.playbackRate = 2;
+                    merchVideoReverse.play().then(() => {
+                        merchVideoReverse.onended = function() {
+                            console.log("Reverse merch video finished.");
+                            merchVideoReverse.onended = null;
+                            merchVideoReverse.pause();
+                            merchVideoReverse.currentTime = 0;
+                            $merchVideoReverseElement.addClass('hide');
+                            $animatedElement.addClass('on-top');
+                            performCommonResetTasks();
+                            console.log("Merch reset sequence complete.");
+                            isTransitioning = false;
+                        };
+                    }).catch(error => {
+                        console.error("Error playing reverse merch video:", error);
                         merchVideoReverse.pause();
                         merchVideoReverse.currentTime = 0;
-                        $merchVideoReverseElement.addClass('hide'); // Hide after playing
-
-                        // Bring home video TO FRONT after reverse finishes
+                        $merchVideoReverseElement.addClass('hide');
                         $animatedElement.addClass('on-top');
-                        performCommonResetTasks(); // Cleanup classes & play home video
-                        isTransitioning = false; // End transition
-                    };
-                 }).catch(error => {
-                     console.error("Error playing reverse merch video:", error);
-                     // merchVideoReverse.playbackRate = 1.0; // Reset if changed
-                     merchVideoReverse.pause();
-                     merchVideoReverse.currentTime = 0;
-                     $merchVideoReverseElement.addClass('hide'); // Hide on error too
-                      // Bring home video to top even on error
-                     $animatedElement.addClass('on-top');
-                     performCommonResetTasks();
-                     isTransitioning = false;
-                 });
-
-            } else if (source === 'contact') {
-                // Resetting from Contact View
-                // Contact info hides via body class removal in performCommonResetTasks
-                // $mapContainer.removeClass('contact-view-active'); // Removed in common tasks
-                $animatedElement.removeClass('gif-animate-forward'); // Stop animation class
-
-                // Ensure home video is visible and NOT on top initially
-                $animatedElement.removeClass('hide on-top');
-
-                performCommonResetTasks();
-                // No video transition for contact, reset state quickly
-                isTransitioning = false; // End transition earlier for contact
+                        performCommonResetTasks();
+                        console.error("Merch reset sequence completed with error.");
+                        isTransitioning = false;
+                    });
+                }, fadeOutDurationMs); // Wait for fade-out before playing reverse
 
             } else {
-                // Fallback / Unknown source
-                console.warn("Reset called with unknown source or state:", source);
-                $animatedElement.removeClass('hide gif-animate-forward on-top');
-                performCommonResetTasks();
-                isTransitioning = false;
+                 // Fallback / Unknown source
+                 console.warn("Reset called with unknown source or state:", source);
+                 $animatedElement.removeClass('hide gif-animate-forward on-top');
+                 performCommonResetTasks();
+                 isTransitioning = false;
             }
-        } // End resetToDefaultView
-
+        }
         // --- Helper function for common reset tasks ---
         function performCommonResetTasks() {
             console.log("Performing common reset tasks...");
 
             // Pause/Reset transition videos state
-            musicVideo.pause();
-            musicVideo.currentTime = 0;
-            $musicVideoElement.addClass('hide');
+            musicVideo.pause(); musicVideo.currentTime = 0; $musicVideoElement.addClass('hide');
+            musicVideoReverse.pause(); musicVideoReverse.currentTime = 0; $musicVideoReverseElement.addClass('hide');
+            merchVideo.pause(); merchVideo.currentTime = 0; $merchVideoElement.addClass('hide');
+            merchVideoReverse.pause(); merchVideoReverse.currentTime = 0; $merchVideoReverseElement.addClass('hide');
 
-            musicVideoReverse.pause();
-            musicVideoReverse.currentTime = 0;
-            $musicVideoReverseElement.addClass('hide'); // Ensure hidden
+            // Remove general state classes
+            $mapContainer.removeClass('contact-view-active music-view-active merch-view-active');
+            $body.removeClass('music-info-hidden merch-info-hidden');
+            // Ensure temporary class is removed here too, just in case
+            $musicPlayerWrapper.removeClass('player-visible keep-visible-during-slide');
+            $merchContentContainer.removeClass('merch-visible');
 
-            // *** NEW: Reset Merch Videos ***
-            merchVideo.pause();
-            merchVideo.currentTime = 0;
-            $merchVideoElement.addClass('hide');
-
-            merchVideoReverse.pause();
-            merchVideoReverse.currentTime = 0;
-            $merchVideoReverseElement.addClass('hide'); // Ensure hidden
-
-
-            // Remove general state classes from containers/body
-            $mapContainer.removeClass('contact-view-active music-view-active merch-view-active'); // *** ADDED merch ***
-            $body.removeClass('music-info-hidden merch-info-hidden'); // *** ADDED merch ***
-            $musicFrameContainer.removeClass('iframe-visible');
-            $merchContentContainer.removeClass('merch-visible'); // *** ADDED merch ***
-
-            // Ensure home video element is displayed (remove potential hide/animate classes)
-            // The 'on-top' class should be handled specifically by the reset source logic
+            // Reset home video state (on-top handled by specific reset logic)
             $animatedElement.removeClass('hide gif-animate-forward');
 
-            // Restart home video (only if no other view is now active - safety check)
+            // Restart home video if appropriate
             if (!$mapContainer.hasClass('contact-view-active') && !$mapContainer.hasClass('music-view-active') && !$mapContainer.hasClass('merch-view-active')) {
                 console.log("Restarting home video.");
                 homeVideo.currentTime = 0;
@@ -437,18 +452,16 @@ $(document).ready(function () {
             } else {
                 console.log("Home video restart skipped due to an active state lingering unexpectedly.");
             }
-        } // End performCommonResetTasks
+       } // End performCommonResetTasks
 
-        // --- Back Button Event Handlers ---
-        $backButton.on('click', function() { resetToDefaultView('contact'); }); // Contact back
-        $musicBackButton.on('click', function() { resetToDefaultView('music'); }); // Music back
-        $merchBackButton.on('click', function() { resetToDefaultView('merch'); }); // *** NEW: Merch back ***
+       // --- Back Button Event Handlers ---
+       $backButton.on('click', function() { resetToDefaultView('contact'); });
+       $musicBackButton.on('click', function() { resetToDefaultView('music'); });
+       $merchBackButton.on('click', function() { resetToDefaultView('merch'); });
 
-
-    } else {
-        console.error("Essential elements missing. Full functionality disabled.");
-    }
-
+   } else {
+       console.error("Essential elements missing. Full functionality disabled.");
+   }
 
 }); // End Document Ready
 

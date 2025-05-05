@@ -165,52 +165,103 @@ button:hover {
 }
 
 
-/* --- MUSIC IFRAME CONTAINER --- */
-#music-iframe-container {
+
+/* --- MUSIC IFRAME CONTAINER --- REVISED SLIDE-UP (No Fade, Slow) --- */
+#music-player-wrapper {
   position: absolute;
-  bottom: 0;
+  bottom: 18%;
   left: 0;
   width: 100%;
-  height: 80%; /* Example height */
+  height: 70%;
   z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Initial State & Transition */
-  transform: translateY(100%);
-  opacity: 0;
-  visibility: hidden;
+  overflow: hidden;
+  visibility: hidden; /* Base state is hidden */
   pointer-events: none;
-  transition: transform 0.6s ease-out, opacity 0.5s ease-out;
+  /* No transition on the wrapper itself */
 }
 
-#music-iframe-container.iframe-visible {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
+#music-player-wrapper.player-visible {
+  visibility: visible; /* Becomes visible when class is added */
   pointer-events: auto;
 }
 
+/* *** ADD THIS RULE *** */
+/* Temporarily keep the wrapper visible while the inner container slides out */
+#music-player-wrapper.keep-visible-during-slide {
+    visibility: visible !important; /* Force visibility */
+    pointer-events: none; /* Keep it non-interactive during slide */
+}
+
+
+/* --- REVISED: MUSIC IFRAME CONTAINER (Inner Sliding Content) --- */
+#music-iframe-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: transparent;
+
+  transform: translateY(100%); /* Base state: below */
+  transition: transform 0.6s ease-out; /* Animate transform changes */
+}
+
+/* Rule for SLIDE UP when wrapper gets .player-visible */
+#music-player-wrapper.player-visible #music-iframe-container {
+  transform: translateY(0);
+}
+
+/* *** NEW RULE for SLIDE DOWN *** */
+/* When wrapper has .player-sliding-out, force inner container down */
+/* We keep .player-visible during this time so the wrapper stays visible */
+#music-player-wrapper.player-sliding-out #music-iframe-container {
+  transform: translateY(100%);
+}
+
+/* --- Music Iframe and Button styling --- */
 #music-iframe {
-  width: 60%;
+  width: 60%; /* Adjust width if needed */
   flex-grow: 1;
+  /* Remove constraints added when height was small */
+  /* max-height: calc(100% - 50px); */
+  /* min-height: 80px; */
   border: none;
   display: block;
 }
 
 #music-iframe-container #music-back-button {
   flex-shrink: 0;
-  margin: 10px auto;
+  margin: 10px auto; /* Restore original margin */
   padding: 0.8em 1em 0.3em;
   font-size: 0.75em;
   border: 1px solid #555;
   color: #000;
   transform: translateY(-.5em);
-  transition: transform .4s ease;
+  transition: transform .4s ease; /* Keep button's own transition */
 }
 #music-iframe-container #music-back-button:hover {
    transform: translateY(0);
 }
+
+/* --- Reduced Motion --- */
+@media (prefers-reduced-motion) {
+  #music-player-wrapper,
+  #music-iframe-container,
+  #music-iframe-container #music-back-button {
+    transition: none !important;
+  }
+
+  #music-player-wrapper.player-visible {
+      visibility: visible;
+      pointer-events: auto;
+  }
+  #music-player-wrapper.player-visible #music-iframe-container {
+      transform: translateY(0); /* Instantly in final position */
+  }
+  /* Optional: Disable button hover transform in reduced motion */
+  /* #music-iframe-container #music-back-button { transform: none !important; } */
+}
+
 
 /* --- *** NEW: MERCH CONTENT CONTAINER *** --- */
 #merch-content-container {
