@@ -336,8 +336,7 @@ button:hover {
 /* Hide overlays and home video when contact is active */
 .map-container.contact-view-active #music-hover-overlay,
 .map-container.contact-view-active #merch-hover-overlay,
-.map-container.contact-view-active #contact-hover-overlay,
-.map-container.contact-view-active #home-animated /* Ensure home hidden */ {
+.map-container.contact-view-active #contact-hover-overlay/* Ensure home hidden */ {
     display: none !important;
     pointer-events: none !important;
 }
