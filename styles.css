@@ -325,7 +325,7 @@ button:hover {
 /* Contact Animation (Applied to #home-animated) */
 #home-animated.gif-animate-forward {
   transform: translateX(150vw) rotate(420deg);
-  opacity: 0;
+  opacity: 1;
   pointer-events: none;
 }
 
