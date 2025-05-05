@@ -194,6 +194,7 @@ $(document).ready(function () {
                         console.log("Timeout(0) fired: Playing forward music video.");
                         musicVideo.muted = false; // Play with sound
                         musicVideo.loop = false;
+                        musicVideo.playbackRate = 1.5
                         musicVideo.play().then(() => {
                             console.log("Music video playing forward initiated.");
                         }).catch(error => {

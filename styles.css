@@ -272,6 +272,10 @@ button:hover {
   transform: translate(-50%, -50%);
   width: 80%; /* Adjust width as needed */
   max-width: 500px; /* Example max-width */
+  min-width: 150px;
+  height: 30%;
+  min-height: 200px;
+  max-height: 400px;
   z-index: 20;
   display: flex;
   flex-direction: column;
