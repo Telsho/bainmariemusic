@@ -9,224 +9,42 @@
 </head>
 
 <body>
-  <div id="splash" onclick="this.classList.add('hide')" class="hide">
-    </div>
-
   <div class="map-container">
     <div id="map">
       <video id="home-animated" autoplay loop muted playsinline>
         <source src="full_frame.mp4" type="video/mp4">
         Your browser does not support the video tag. Maybe update it?
       </video>
+
+      <video id="music-video" class="hide" playsinline>
+        <source src="music_animation.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+
+      <video id="music-video-reverse" class="hide" playsinline preload="metadata">
+         <source src="music_animation_reverse.mp4" type="video/mp4">
+         Your browser does not support the video tag.
+      </video>
+
+
       <img src="MUSIC_hover.png" id="music-hover-overlay" alt="Music Area Hover">
       <img src="MERCH_hover.png" id="merch-hover-overlay" alt="Merch Area Hover">
       <img src="CONTACT_hover.png" id="contact-hover-overlay" alt="Contact Area Hover">
     </div>
-
-    <div id="contact-info">
-        <p>bainmarie.music@gmail.com</p>
-        <button id="back-button">&larr; Back</button>
+    <div id="music-iframe-container">
+      <iframe id="music-iframe" src="https://ffm.bio/bainmarie" frameborder="0"></iframe>
+      <button id="music-back-button">&larr; Back</button>
     </div>
+
+  </div>
+  <div id="contact-info">
+    <p>bainmarie.music@gmail.com</p>
+    <button id="back-button">&larr; Back</button>
   </div>
 
+
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script>
-    console.log("Script start");
+  <script src="script.js"></script>
 
-    const $mapContainer = $('.map-container');
-    const $map = $('#map'); // May not be strictly needed anymore, but keep for now
-
-    // --- Define Original Image Dimensions ---
-    // Use the dimensions your original x/y coordinates were based on
-    const originalWidth = 957;
-    const originalHeight = 879;
-
-    // --- Define Hotspots using RATIOS relative to original dimensions ---
-    const hotspots = [
-      {
-        name: 'music',
-        overlaySelector: '#music-hover-overlay',
-        xMinRatio: 60 / originalWidth,   // Original xMin / originalWidth
-        xMaxRatio: 290 / originalWidth,  // Original xMax / originalWidth
-        yMinRatio: 400 / originalHeight, // Original yMin / originalHeight
-        yMaxRatio: 480 / originalHeight  // Original yMax / originalHeight
-      },
-      {
-        name: 'merch',
-        overlaySelector: '#merch-hover-overlay',
-        xMinRatio: 540 / originalWidth,
-        xMaxRatio: 750 / originalWidth,
-        yMinRatio: 140 / originalHeight,
-        yMaxRatio: 210 / originalHeight
-      },
-      {
-        name: 'contact',
-        overlaySelector: '#contact-hover-overlay',
-        xMinRatio: 515 / originalWidth,
-        xMaxRatio: 800 / originalWidth,
-        yMinRatio: 675 / originalHeight,
-        yMaxRatio: 735 / originalHeight
-      }
-      // Add more objects here for additional hotspots if needed, using ratios
-    ];
-
-
-    // --- Document Ready ---
-    $(document).ready(function () {
-      console.log("Document ready");
-
-      // === SELECTOR REMAINS THE SAME - Now selects the <video> ===
-      const $animatedElement = $('#home-animated');
-      const $contactInfo = $('#contact-info');
-      const $backButton = $('#back-button');
-
-      // Find the contact hotspot data (will now contain ratios)
-      const contactHotspot = hotspots.find(spot => spot.name === 'contact');
-      if (!contactHotspot) {
-        console.error("Contact hotspot data not found in the hotspots array!");
-      }
-
-      // --- Cache Overlay jQuery Objects ---
-      const $overlays = {};
-      let allElementsFound = true;
-
-      hotspots.forEach(spot => {
-        $overlays[spot.overlaySelector] = $(spot.overlaySelector);
-        if ($overlays[spot.overlaySelector].length === 0) {
-          console.error(`Overlay element (${spot.overlaySelector}) not found in HTML!`);
-          allElementsFound = false;
-        }
-      });
-
-      // Check for other essential elements
-      // === Updated check message slightly ===
-      if ($animatedElement.length === 0) { console.error("Animated element #home-animated (now video) not found!"); allElementsFound = false; }
-      if ($contactInfo.length === 0) { console.error("Contact info element #contact-info not found!"); allElementsFound = false; }
-      if ($backButton.length === 0) { console.error("Back button element #back-button not found!"); allElementsFound = false; }
-      if ($mapContainer.length === 0) { console.error("Map container element .map-container not found!"); allElementsFound = false; }
-
-
-      // --- Setup Effects only if all elements exist ---
-      if (allElementsFound) {
-
-        // --- Hover Effect Logic ---
-        // === Changed variable name from $gif to $animatedElement for clarity ===
-        $animatedElement.on('mousemove', function (event) {
-          if ($mapContainer.hasClass('contact-view-active')) {
-            return; // Don't show hover if contact view is active
-          }
-
-          // Get CURRENT dimensions of the VIDEO
-          const currentElementWidth = $animatedElement.width();
-          const currentElementHeight = $animatedElement.height();
-          if (currentElementWidth === 0 || currentElementHeight === 0) return; // Avoid division by zero or calculation if hidden/not loaded
-
-          const elementOffset = $animatedElement.offset();
-          const mouseX = event.pageX - elementOffset.left;
-          const mouseY = event.pageY - elementOffset.top;
-
-          let activeOverlaySelector = null;
-
-          hotspots.forEach(spot => {
-            // Calculate CURRENT pixel boundaries based on ratios and current size
-            const currentXMin = spot.xMinRatio * currentElementWidth;
-            const currentXMax = spot.xMaxRatio * currentElementWidth;
-            const currentYMin = spot.yMinRatio * currentElementHeight;
-            const currentYMax = spot.yMaxRatio * currentElementHeight;
-
-            // Check if mouse is within the *current* boundaries
-            const isInside = (mouseX >= currentXMin && mouseX <= currentXMax && mouseY >= currentYMin && mouseY <= currentYMax);
-
-            if (isInside) {
-              activeOverlaySelector = spot.overlaySelector;
-            }
-          });
-
-          // Show/hide overlays based on hover
-          hotspots.forEach(spot => {
-            const $overlay = $overlays[spot.overlaySelector];
-            if (spot.overlaySelector === activeOverlaySelector) {
-              $overlay.show();
-            } else {
-              $overlay.hide();
-            }
-          });
-        });
-
-        // --- Mouse Leave Logic for Hover ---
-        $animatedElement.on('mouseleave', function () {
-          // Hide ALL overlays when mouse leaves the element
-          hotspots.forEach(spot => {
-            $overlays[spot.overlaySelector].hide();
-          });
-        });
-
-        // --- Click Logic for Contact ---
-        $animatedElement.on('click', function (event) {
-          if ($mapContainer.hasClass('contact-view-active') || !contactHotspot) {
-            return; // Don't process click if contact already shown or hotspot missing
-          }
-
-          // Get CURRENT dimensions of the VIDEO on click
-          const currentElementWidth = $animatedElement.width();
-          const currentElementHeight = $animatedElement.height();
-          if (currentElementWidth === 0 || currentElementHeight === 0) return; // Avoid issues if hidden/not loaded
-
-          const elementOffset = $animatedElement.offset();
-          const clickX = event.pageX - elementOffset.left;
-          const clickY = event.pageY - elementOffset.top;
-
-          // Calculate CURRENT pixel boundaries for the CONTACT hotspot
-          const currentContactXMin = contactHotspot.xMinRatio * currentElementWidth;
-          const currentContactXMax = contactHotspot.xMaxRatio * currentElementWidth;
-          const currentContactYMin = contactHotspot.yMinRatio * currentElementHeight;
-          const currentContactYMax = contactHotspot.yMaxRatio * currentElementHeight;
-
-          // Check if click is within the *current* CONTACT boundaries
-          const isInsideContact = (
-            clickX >= currentContactXMin && clickX <= currentContactXMax &&
-            clickY >= currentContactYMin && clickY <= currentContactYMax
-          );
-
-          if (isInsideContact) {
-            console.log("Contact area clicked!");
-
-            // Hide all hover overlays explicitly
-            hotspots.forEach(spot => {
-              $overlays[spot.overlaySelector].hide();
-            });
-
-            $mapContainer.css('overflow', 'visible'); // Keep if needed for animation
-
-            // Add animation classes (now applied to the video)
-            $mapContainer.addClass('contact-view-active');
-            $animatedElement.addClass('gif-animate-forward'); // Renamed class in CSS below
-
-          } else {
-            console.log("Clicked outside contact area.");
-          }
-        });
-
-        // --- Back Button Click Logic ---
-        $backButton.on('click', function () {
-          console.log("Back button clicked!");
-
-          // Remove animation classes (now from the video)
-          $animatedElement.removeClass('gif-animate-forward');
-          $mapContainer.removeClass('contact-view-active');
-          // Reset overflow if necessary (depends on your CSS)
-          // $mapContainer.css('overflow', 'hidden'); // Example: reset if needed
-        });
-
-      } else {
-        console.error("Essential elements missing. Hover and click effects setup aborted.");
-      }
-
-    }); // End Document Ready
-
-    console.log("Script end");
-
-  </script>
 </body>
-
 </html>

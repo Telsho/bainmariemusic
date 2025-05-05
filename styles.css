@@ -1,8 +1,7 @@
-/* styles.css - Updated for Video */
+/* styles.css - Combined & Updated Dimensions */
 
 :root {
-  /* --bg-color: #ffe9fb; */
-  --bg-color: #ffff; /* Using white */
+  --bg-color: #ffff; /* White */
 }
 
 * {
@@ -11,46 +10,31 @@
   box-sizing: border-box;
 }
 
+.on-top {
+  z-index: 7 !important; /* Or any value higher than 6 */
+}
+
 .hide {
-  display: none !important; /* Utility class to force hiding */
+  display: none !important;
 }
 
 body {
   height: 100vh;
-  overflow: hidden; /* Prevent body scrollbars */
+  overflow-y: auto; /* Allow scrolling if content exceeds height */
+  overflow-x: hidden;
   position: relative;
   background: var(--bg-color);
   cursor: url('Bathrtubcursor.png'), auto;
-
-  /* --- Flexbox Centering (Crucial) --- */
   display: flex;
-  /* These two center the .map-container IF it's smaller than the body */
-  justify-content: center; /* Centers horizontally */
-  align-items: center;   /* Centers vertically */
-
-  /* Add small padding to prevent container sticking to edges */
-  padding: 5px;
-  box-sizing: border-box; /* Include padding in height calculation */
+  /* *** UPDATED: Stack map and contact info vertically *** */
+  flex-direction: column;
+  justify-content: center; /* Center vertically */
+  align-items: center;   /* Center map/contact horizontally */
+  padding: 20px 5px; /* Add some vertical padding */
 }
 
-#splash {
-  position: absolute;
-  inset: 0; /* Covers entire viewport */
-  z-index: 999; /* Highest layer */
-  background: var(--bg-color);
-  display: grid; /* Simple centering for content */
-  place-items: center;
-}
+a { color: black; }
 
-#splash img { /* Assuming splash might still use images */
-  cursor: pointer;
-}
-
-a {
-  color: black; /* Basic link styling */
-}
-
-/* --- Base Button Styling --- */
 button {
   box-shadow: none;
   border: 2px solid black;
@@ -61,66 +45,65 @@ button {
   font-weight: normal;
   font-size: 15px;
   background: var(--bg-color);
-  cursor: pointer; /* Should be overridden by body cursor, but good fallback */
-  transform: translateY(-.8em); /* Initial "raised" state */
+  cursor: pointer;
+  transform: translateY(-.8em);
   transition: transform .5s ease;
 }
 
 button:hover {
-  transform: translateY(0); /* Lower on hover */
+  transform: translateY(0);
 }
 
 /* --- Map Container --- */
 .map-container {
-  /* --- Define Aspect Ratio --- */
-  aspect-ratio: 972 / 886; /* Target shape */
-
-  /* --- Responsive Sizing based on Viewport --- */
-  width: min(95vw, calc(95vh * (972 / 886)));
-
-  /* Height is determined automatically by width + aspect-ratio */
+  aspect-ratio: 968 / 974;
+  width: min(95vw, calc(95vh * (968 / 974)));
   height: auto;
-
-  /* --- Maximum Size Constraints --- */
-  max-width: min(972px, 95vw);
-  max-height: min(886px, 95vh);
-
-  /* --- Centering & Layout --- */
-  margin: auto;
-  position: relative;
+  max-width: min(968px, 95vw);
+  /* Adjust max-height slightly smaller if needed to prevent contact clipping */
+  max-height: min(974px, 95vh);
+  margin: auto; /* Center horizontally */
+  position: relative; /* Still needed for absolute children */
   user-select: none;
-  overflow: hidden; /* Still needed initially */
+  overflow: hidden; /* Keep overflow hidden for absolute children like iframe */
+  
 }
 
 #map {
   width: 100%;
-  height: 100%; /* Needs to be 100% to fill the container */
-  cursor: grab; /* Will be overridden when contact view is active */
+  height: 100%;
   position: relative;
   user-select: none;
 }
 
-/* --- Main Animated Video --- */
-/* === UPDATED SELECTOR: Changed from img#home-animated to video#home-animated === */
-#map video#home-animated {
+/* --- Videos --- */
+#map video#home-animated,
+#map video#music-video,
+#map video#music-video-reverse {
   display: block;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;      /* Make video fill the #map container */
-  height: 100%;     /* Make video fill the #map container */
-  object-fit: cover;/* Ensure video covers the area, cropping if aspect ratio differs */
-  z-index: 5;       /* Base layer within #map */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: auto;
+  cursor: inherit;
+}
 
-  /* Animation properties */
+#map video#home-animated {
+  z-index: 5;
   transition: transform 2s ease-out, opacity 2s ease-out;
   transform-origin: center center;
-  pointer-events: auto; /* Allow mouse events on the video */
+}
+
+#map video#music-video
+#map video#music-video-reverse {
+  z-index: 6;
 }
 
 
-/* --- Hover Overlays (Positioned above Video) --- */
-/* These remain images */
+/* --- Hover Overlays --- */
 #music-hover-overlay,
 #merch-hover-overlay,
 #contact-hover-overlay {
@@ -129,95 +112,159 @@ button:hover {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 15; /* Above base video */
-  display: none; /* Hidden initially, shown by JS */
-  pointer-events: none; /* Allow clicks/hovers to pass through to the video */
+  z-index: 15;
+  display: none;
+  pointer-events: none;
 }
 
-/* --- CONTACT INFO SECTION --- */
+/* --- CONTACT INFO SECTION (Now in normal flow) --- */
 #contact-info {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* Center horizontally and vertically */
+  transform: translate(-50%, -50%);
   text-align: center;
-  /* Positioned logically "behind" the video when it's visible */
   z-index: 2;
-  /* Opacity/Visibility are NOT used here - it's always present, just covered */
+  background-color: var(--bg-color);
+  padding: 20px;
+  border: 1px solid black;
+  /* No longer starts hidden via class */
 }
 
 #contact-info p {
-  margin: 0 0 20px 0;
-  font-size: 1.2em;
+  margin: 0 0 15px 0; /* Adjusted margin */
+  font-size: 1.1em; /* Adjusted size */
   font-family: 'Verdana', sans-serif;
 }
 
-/* --- Back Button Specific Styles --- */
-#back-button {
+#back-button { /* Contact Back Button */
   font-size: 0.75em;
   border: 0px solid #ccc;
   color: #000;
-  margin-top: 15px;
-  /* Inherits transform/transition from base button */
+  margin-top: 10px; /* Adjusted margin */
 }
 
 
-/* --- Animation States (Added/Removed via JS) --- */
+/* --- MUSIC IFRAME CONTAINER --- */
+#music-iframe-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-/* State applied to VIDEO to make it animate away */
-/* === UPDATED SELECTOR and CLASS NAME for clarity === */
-#home-animated.gif-animate-forward { /* Kept class name for simplicity, applies to video now */
-  transform: translateX(150vw) rotate(420deg); /* Move far off screen and rotate */
-  opacity: 0; /* Fade out completely during animation */
-  pointer-events: none; /* Prevent interaction while animating/off-screen */
+  /* --- NEW Initial State & Transition --- */
+  transform: translateY(100%); /* Start fully below the viewport */
+  opacity: 0;                   /* Start fully transparent */
+  visibility: hidden;           /* Start hidden */
+  pointer-events: none;         /* Start non-interactive */
+  /* Transition transform (slide) and opacity (fade-in) */
+  transition: transform 0.6s ease-out, opacity 0.5s ease-out;
+  /* NOTE: Visibility will change instantly with opacity > 0 */
 }
 
-/* State applied to container when contact info is revealed */
+/* Style for when iframe container should be visible */
+#music-iframe-container.iframe-visible {
+  transform: translateY(0);     /* Move to final position (at the bottom) */
+  opacity: 1;                   /* Make fully opaque */
+  visibility: visible;          /* Make visible */
+  pointer-events: auto;         
+}
+
+
+/* Style for the iframe itself */
+#music-iframe {
+  width: 60%;
+  flex-grow: 1;
+  border: none;
+  display: block;
+}
+
+#music-iframe-container #music-back-button {
+  flex-shrink: 0;
+  margin: 10px auto;
+  padding: 0.8em 1em 0.3em;
+  font-size: 0.75em;
+  border: 1px solid #555;
+  color: #000;
+  transform: translateY(-.5em);
+  transition: transform .4s ease;
+}
+
+#music-iframe-container #music-back-button:hover {
+     transform: translateY(0);
+}
+
+
+/* --- Animation & State Classes --- */
+
+/* Contact Animation (Applied to #home-animated) */
+#home-animated.gif-animate-forward {
+  transform: translateX(150vw) rotate(420deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* CONTACT VIEW ACTIVE (Applied to .map-container) */
 .map-container.contact-view-active {
-    cursor: default !important; /* Ensure default cursor */
+    cursor: default !important;
 }
-/* Hide hover overlays when contact view is active */
+.map-container.contact-view-active #map,
+.map-container.contact-view-active #map video#home-animated {
+    cursor: default !important;
+}
 .map-container.contact-view-active #music-hover-overlay,
 .map-container.contact-view-active #merch-hover-overlay,
 .map-container.contact-view-active #contact-hover-overlay {
     display: none !important;
+    pointer-events: none !important;
 }
-/* Ensure map cursor is also default */
-.map-container.contact-view-active #map {
-    cursor: default !important;
+/* Contact info outside map-container is not affected by this class */
+
+
+/* MUSIC VIEW ACTIVE (Applied via JS to body now) */
+
+/* Hide overlays AND the main home video WHEN music view active */
+/* Requires map-container class still for this part */
+.map-container.music-view-active #music-hover-overlay,
+.map-container.music-view-active #merch-hover-overlay,
+.map-container.music-view-active #contact-hover-overlay,
+.map-container.music-view-active #home-animated {
+    display: none !important;
+    pointer-events: none !important;
 }
-/* === Ensure video cursor doesn't interfere === */
-.map-container.contact-view-active #map video#home-animated {
-    cursor: default !important;
-    pointer-events: none; /* Make sure clicks don't register on video when contact shown */
+
+/* Hide contact info ONLY during music view using body class */
+body.music-info-hidden #contact-info {
+    display: none !important;
 }
 
 
-/* Panning Disabled State (If you were using it - kept for reference) */
-.panning-disabled {
-  cursor: default !important; /* Override grab cursor */
-}
-.panning-disabled #map {
-   cursor: default !important; /* Ensure map cursor matches */
-}
-
-
-/* --- REDUCED MOTION PREFERENCES --- */
+/* --- Reduced Motion --- */
 @media (prefers-reduced-motion) {
-  /* Removed static image logic as it's less relevant for video */
-
-  /* Disable transitions on relevant elements */
-  /* === UPDATED SELECTOR === */
-  #home-animated, /* Targets the video now */
-  button { /* Includes #back-button */
-    transition: none !important;
+  #home-animated,
+  #music-video,
+  #music-video-reverse,
+  button,
+  #music-iframe-container { 
+    transition: none !important; 
   }
 
-  /* Change animation to simple hide instead of transform */
-  /* === UPDATED SELECTOR === */
-  #home-animated.gif-animate-forward { /* Class now applied to video */
-      transform: none; /* Prevent movement */
-      opacity: 0; /* Just fade out */
-      pointer-events: none; /* Still needed */
+  #home-animated.gif-animate-forward {
+    transform: none;
+    opacity: 0;
+    pointer-events: none;
+   }
+
+   /* Ensure iframe just appears without sliding in reduced motion */
+   #music-iframe-container.iframe-visible {
+     transform: translateY(0);
+     opacity: 1;
+     visibility: visible;
+     pointer-events: auto;
    }
 }
