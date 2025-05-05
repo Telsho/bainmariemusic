@@ -26,12 +26,29 @@ body {
   background: var(--bg-color);
   cursor: url('Bathrtubcursor.png'), auto;
   display: flex;
-  /* *** UPDATED: Stack map and contact info vertically *** */
   flex-direction: column;
   justify-content: center; /* Center vertically */
   align-items: center;   /* Center map/contact horizontally */
   padding: 20px 5px; /* Add some vertical padding */
 }
+
+/* *** NEW: Class to hide contact/music during merch view *** */
+body.merch-info-hidden #contact-info,
+body.merch-info-hidden #music-iframe-container {
+    display: none !important;
+}
+/* *** NEW: Class to hide contact/merch during music view *** */
+body.music-info-hidden #contact-info,
+body.music-info-hidden #merch-content-container { /* Also hide merch */
+    display: none !important;
+}
+/* *** NEW: Class to hide music/merch during contact view *** */
+/* (Contact info itself is not hidden by a body class in your original code) */
+/* body.contact-info-hidden #music-iframe-container, */
+/* body.contact-info-hidden #merch-content-container { */
+/* display: none !important; */
+/* } */
+
 
 a { color: black; }
 
@@ -60,13 +77,12 @@ button:hover {
   width: min(95vw, calc(95vh * (968 / 974)));
   height: auto;
   max-width: min(968px, 95vw);
-  /* Adjust max-height slightly smaller if needed to prevent contact clipping */
   max-height: min(974px, 95vh);
   margin: auto; /* Center horizontally */
   position: relative; /* Still needed for absolute children */
   user-select: none;
-  overflow: hidden; /* Keep overflow hidden for absolute children like iframe */
-  
+  overflow: hidden; /* Keep overflow hidden */
+
 }
 
 #map {
@@ -79,7 +95,9 @@ button:hover {
 /* --- Videos --- */
 #map video#home-animated,
 #map video#music-video,
-#map video#music-video-reverse {
+#map video#music-video-reverse,
+#map video#merch-video,        /* *** ADDED *** */
+#map video#merch-video-reverse /* *** ADDED *** */ {
   display: block;
   position: absolute;
   top: 0;
@@ -97,9 +115,11 @@ button:hover {
   transform-origin: center center;
 }
 
-#map video#music-video
-#map video#music-video-reverse {
-  z-index: 6;
+#map video#music-video,
+#map video#music-video-reverse,
+#map video#merch-video,        /* *** ADDED *** */
+#map video#merch-video-reverse /* *** ADDED *** */ {
+  z-index: 6; /* Keep transition videos on same layer */
 }
 
 
@@ -117,23 +137,23 @@ button:hover {
   pointer-events: none;
 }
 
-/* --- CONTACT INFO SECTION (Now in normal flow) --- */
+/* --- CONTACT INFO SECTION --- */
 #contact-info {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 2;
+  z-index: 2; /* Below map container overlays/videos but above body */
   background-color: var(--bg-color);
   padding: 20px;
   border: 1px solid black;
-  /* No longer starts hidden via class */
+  /* Initially visible */
 }
 
 #contact-info p {
-  margin: 0 0 15px 0; /* Adjusted margin */
-  font-size: 1.1em; /* Adjusted size */
+  margin: 0 0 15px 0;
+  font-size: 1.1em;
   font-family: 'Verdana', sans-serif;
 }
 
@@ -141,7 +161,7 @@ button:hover {
   font-size: 0.75em;
   border: 0px solid #ccc;
   color: #000;
-  margin-top: 10px; /* Adjusted margin */
+  margin-top: 10px;
 }
 
 
@@ -151,32 +171,26 @@ button:hover {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 80%;
+  height: 80%; /* Example height */
   z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  /* --- NEW Initial State & Transition --- */
-  transform: translateY(100%); /* Start fully below the viewport */
-  opacity: 0;                   /* Start fully transparent */
-  visibility: hidden;           /* Start hidden */
-  pointer-events: none;         /* Start non-interactive */
-  /* Transition transform (slide) and opacity (fade-in) */
+  /* Initial State & Transition */
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition: transform 0.6s ease-out, opacity 0.5s ease-out;
-  /* NOTE: Visibility will change instantly with opacity > 0 */
 }
 
-/* Style for when iframe container should be visible */
 #music-iframe-container.iframe-visible {
-  transform: translateY(0);     /* Move to final position (at the bottom) */
-  opacity: 1;                   /* Make fully opaque */
-  visibility: visible;          /* Make visible */
-  pointer-events: auto;         
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
-
-/* Style for the iframe itself */
 #music-iframe {
   width: 60%;
   flex-grow: 1;
@@ -194,9 +208,60 @@ button:hover {
   transform: translateY(-.5em);
   transition: transform .4s ease;
 }
-
 #music-iframe-container #music-back-button:hover {
-     transform: translateY(0);
+   transform: translateY(0);
+}
+
+/* --- *** NEW: MERCH CONTENT CONTAINER *** --- */
+#merch-content-container {
+  position: absolute;
+  /* Position it similarly to music or contact, adjust as needed */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%; /* Adjust width as needed */
+  max-width: 500px; /* Example max-width */
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg-color); /* Give it a background */
+  padding: 20px;
+  border: 1px solid black;
+  /* Initial State & Transition (fade-in/out) */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.1s ease-out, visibility 0s linear 0.1s; /* Fade out */
+  /* Use visibility transition delay to hide after fade */
+}
+
+#merch-content-container.merch-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.1s ease-out; /* Fade in */
+}
+
+/* Style the GetWaitlist widget container if needed */
+#getWaitlistContainer {
+  width: 100%; /* Take available width */
+  margin-bottom: 15px; /* Space before button */
+}
+
+/* Style the merch back button */
+#merch-content-container #merch-back-button {
+  flex-shrink: 0;
+  margin: 10px auto 0; /* Margin top only */
+  padding: 0.8em 1em 0.3em;
+  font-size: 0.75em;
+  border: 1px solid #555;
+  color: #000;
+  transform: translateY(-.5em);
+  transition: transform .4s ease;
+}
+#merch-content-container #merch-back-button:hover {
+  transform: translateY(0);
 }
 
 
@@ -217,19 +282,18 @@ button:hover {
 .map-container.contact-view-active #map video#home-animated {
     cursor: default !important;
 }
+/* Hide overlays and home video when contact is active */
 .map-container.contact-view-active #music-hover-overlay,
 .map-container.contact-view-active #merch-hover-overlay,
-.map-container.contact-view-active #contact-hover-overlay {
+.map-container.contact-view-active #contact-hover-overlay,
+.map-container.contact-view-active #home-animated /* Ensure home hidden */ {
     display: none !important;
     pointer-events: none !important;
 }
-/* Contact info outside map-container is not affected by this class */
 
 
-/* MUSIC VIEW ACTIVE (Applied via JS to body now) */
-
+/* MUSIC VIEW ACTIVE (Applied to .map-container) */
 /* Hide overlays AND the main home video WHEN music view active */
-/* Requires map-container class still for this part */
 .map-container.music-view-active #music-hover-overlay,
 .map-container.music-view-active #merch-hover-overlay,
 .map-container.music-view-active #contact-hover-overlay,
@@ -238,9 +302,14 @@ button:hover {
     pointer-events: none !important;
 }
 
-/* Hide contact info ONLY during music view using body class */
-body.music-info-hidden #contact-info {
+/* *** NEW: MERCH VIEW ACTIVE (Applied to .map-container) *** */
+/* Hide overlays AND the main home video WHEN merch view active */
+.map-container.merch-view-active #music-hover-overlay,
+.map-container.merch-view-active #merch-hover-overlay,
+.map-container.merch-view-active #contact-hover-overlay,
+.map-container.merch-view-active #home-animated {
     display: none !important;
+    pointer-events: none !important;
 }
 
 
@@ -249,9 +318,12 @@ body.music-info-hidden #contact-info {
   #home-animated,
   #music-video,
   #music-video-reverse,
+  #merch-video,         /* *** ADDED *** */
+  #merch-video-reverse, /* *** ADDED *** */
   button,
-  #music-iframe-container { 
-    transition: none !important; 
+  #music-iframe-container,
+  #merch-content-container /* *** ADDED *** */ {
+    transition: none !important;
   }
 
   #home-animated.gif-animate-forward {
@@ -263,6 +335,12 @@ body.music-info-hidden #contact-info {
    /* Ensure iframe just appears without sliding in reduced motion */
    #music-iframe-container.iframe-visible {
      transform: translateY(0);
+     opacity: 1;
+     visibility: visible;
+     pointer-events: auto;
+   }
+   /* *** NEW: Ensure merch container just appears without fading *** */
+   #merch-content-container.merch-visible {
      opacity: 1;
      visibility: visible;
      pointer-events: auto;
