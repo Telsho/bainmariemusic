@@ -34,9 +34,9 @@ $(document).ready(function () {
 
     // --- Hotspot Definitions ---
     const hotspots = [
-        { name: 'music', overlaySelector: '#music-hover-overlay', xMinRatio: 60 / originalWidth, xMaxRatio: 290 / originalWidth, yMinRatio: 400 / originalHeight, yMaxRatio: 480 / originalHeight },
-        { name: 'merch', overlaySelector: '#merch-hover-overlay', xMinRatio: 540 / originalWidth, xMaxRatio: 750 / originalWidth, yMinRatio: 140 / originalHeight, yMaxRatio: 210 / originalHeight },
-        { name: 'contact', overlaySelector: '#contact-hover-overlay', xMinRatio: 515 / originalWidth, xMaxRatio: 800 / originalWidth, yMinRatio: 675 / originalHeight, yMaxRatio: 735 / originalHeight }
+        { name: 'music', overlaySelector: '#music-hover-overlay', xMinRatio: 40 / originalWidth, xMaxRatio: 310 / originalWidth, yMinRatio: 340 / originalHeight, yMaxRatio: 500 / originalHeight },
+        { name: 'merch', overlaySelector: '#merch-hover-overlay', xMinRatio: 520 / originalWidth, xMaxRatio: 770 / originalWidth, yMinRatio: 85 / originalHeight, yMaxRatio: 245 / originalHeight },
+        { name: 'contact', overlaySelector: '#contact-hover-overlay', xMinRatio: 500 / originalWidth, xMaxRatio: 820 / originalWidth, yMinRatio: 550 / originalHeight, yMaxRatio: 745 / originalHeight }
     ];
     const contactHotspot = hotspots.find(spot => spot.name === 'contact');
     const musicHotspot = hotspots.find(spot => spot.name === 'music');
