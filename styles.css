@@ -1,5 +1,10 @@
 /* styles.css - Combined & Updated Dimensions */
 
+@font-face {
+  font-family: 'RainyHearts';
+  src: url('rainyhearts.ttf') format('truetype');
+}
+
 :root {
   --bg-color: #ffff; /* White */
 }
@@ -42,12 +47,7 @@ body.music-info-hidden #contact-info,
 body.music-info-hidden #merch-content-container { /* Also hide merch */
     display: none !important;
 }
-/* *** NEW: Class to hide music/merch during contact view *** */
-/* (Contact info itself is not hidden by a body class in your original code) */
-/* body.contact-info-hidden #music-iframe-container, */
-/* body.contact-info-hidden #merch-content-container { */
-/* display: none !important; */
-/* } */
+
 
 
 a { color: black; }
@@ -120,6 +120,7 @@ button:hover {
 #map video#merch-video,        /* *** ADDED *** */
 #map video#merch-video-reverse /* *** ADDED *** */ {
   z-index: 6; /* Keep transition videos on same layer */
+  pointer-events: none;
 }
 
 
@@ -147,14 +148,13 @@ button:hover {
   z-index: 2; /* Below map container overlays/videos but above body */
   background-color: var(--bg-color);
   padding: 20px;
-  border: 1px solid black;
   /* Initially visible */
 }
 
 #contact-info p {
   margin: 0 0 15px 0;
-  font-size: 1.1em;
-  font-family: 'Verdana', sans-serif;
+  font-size: 2em;
+  font-family: 'RainyHearts', 'Verdana', sans-serif;
 }
 
 #back-button { /* Contact Back Button */
@@ -169,11 +169,11 @@ button:hover {
 /* --- MUSIC IFRAME CONTAINER --- REVISED SLIDE-UP (No Fade, Slow) --- */
 #music-player-wrapper {
   position: absolute;
-  bottom: 18%;
+  bottom: 17%;
   left: 0;
   width: 100%;
   height: 70%;
-  z-index: 20;
+  z-index: 4;
   overflow: hidden;
   visibility: hidden; /* Base state is hidden */
   pointer-events: none;
@@ -201,7 +201,6 @@ button:hover {
   flex-direction: column;
   align-items: center;
   background-color: transparent;
-
   transform: translateY(100%); /* Base state: below */
   transition: transform 0.6s ease-out; /* Animate transform changes */
 }
@@ -231,16 +230,15 @@ button:hover {
 
 #music-iframe-container #music-back-button {
   flex-shrink: 0;
-  margin: 10px auto; /* Restore original margin */
   padding: 0.8em 1em 0.3em;
   font-size: 0.75em;
-  border: 1px solid #555;
+  border: 0 solid black;
   color: #000;
-  transform: translateY(-.5em);
+  transform: translateX(.5em);
   transition: transform .4s ease; /* Keep button's own transition */
 }
 #music-iframe-container #music-back-button:hover {
-   transform: translateY(0);
+   transform: translateX(0);
 }
 
 /* --- Reduced Motion --- */
@@ -276,7 +274,7 @@ button:hover {
   height: 30%;
   min-height: 200px;
   max-height: 400px;
-  z-index: 20;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -284,18 +282,8 @@ button:hover {
   padding: 20px;
   border: 1px solid black;
   /* Initial State & Transition (fade-in/out) */
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: opacity 0.1s ease-out, visibility 0s linear 0.1s; /* Fade out */
-  /* Use visibility transition delay to hide after fade */
-}
-
-#merch-content-container.merch-visible {
   opacity: 1;
   visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.1s ease-out; /* Fade in */
 }
 
 /* Style the GetWaitlist widget container if needed */
