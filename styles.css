@@ -37,16 +37,7 @@ body {
   padding: 20px 5px; /* Add some vertical padding */
 }
 
-/* *** NEW: Class to hide contact/music during merch view *** */
-body.merch-info-hidden #contact-info,
-body.merch-info-hidden #music-iframe-container {
-    display: none !important;
-}
-/* *** NEW: Class to hide contact/merch during music view *** */
-body.music-info-hidden #contact-info,
-body.music-info-hidden #merch-content-container { /* Also hide merch */
-    display: none !important;
-}
+
 
 
 
@@ -264,26 +255,34 @@ button:hover {
 /* --- *** NEW: MERCH CONTENT CONTAINER *** --- */
 #merch-content-container {
   position: absolute;
-  /* Position it similarly to music or contact, adjust as needed */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%; /* Adjust width as needed */
-  max-width: 500px; /* Example max-width */
+  width: 80%;
+  max-width: 500px;
   min-width: 150px;
   height: 30%;
   min-height: 200px;
   max-height: 400px;
-  z-index: 4;
+  /* MODIFIED: z-index to be behind merch videos */
+  z-index: 3; /* Videos are z-index 6, home-animated is z-index 5 (but hidden during merch) */
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--bg-color); /* Give it a background */
+  background-color: var(--bg-color);
   padding: 20px;
   border: 1px solid black;
-  /* Initial State & Transition (fade-in/out) */
+  visibility: visible;
+  pointer-events: none;
+  /* REMOVED default transition for opacity here if instant appearance is desired.
+     If you want the *revealed content* to fade in, add it back:
+     transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; */
+}
+
+#merch-content-container.merch-visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto; /* Interactive when visible */
 }
 
 /* Style the GetWaitlist widget container if needed */
