@@ -154,6 +154,10 @@ $(document).ready(function () {
         )
       ) {
         hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
+        // Ensure cursor resets if a view is active and mouse moves
+        if (!$mapContainer.hasClass("contact-view-active") && !$mapContainer.hasClass("music-view-active") && !$mapContainer.hasClass("merch-view-active")) {
+            $animatedElement.css('cursor', 'default');
+        }
         return;
       }
 
@@ -165,21 +169,28 @@ $(document).ready(function () {
       const mouseX = event.pageX - elementOffset.left;
       const mouseY = event.pageY - elementOffset.top;
 
-      let activeOverlaySelector = null;
+      let isOverAnyHotspot = false;
       hotspots.forEach((spot) => {
-        const isInside =
+        const isInsideThisHotspot =
           mouseX >= spot.xMinRatio * currentElementWidth &&
           mouseX <= spot.xMaxRatio * currentElementWidth &&
           mouseY >= spot.yMinRatio * currentElementHeight &&
           mouseY <= spot.yMaxRatio * currentElementHeight;
-        if (isInside) activeOverlaySelector = spot.overlaySelector;
+
+        // Show/hide the specific overlay for this hotspot
+        $overlays[spot.overlaySelector].toggle(isInsideThisHotspot);
+
+        if (isInsideThisHotspot) {
+          isOverAnyHotspot = true;
+        }
       });
 
-      hotspots.forEach((spot) =>
-        $overlays[spot.overlaySelector].toggle(
-          spot.overlaySelector === activeOverlaySelector
-        )
-      );
+      // Change cursor on #home-animated based on hotspot hover
+      if (isOverAnyHotspot) {
+        $animatedElement.css('cursor', 'pointer');
+      } else {
+        $animatedElement.css('cursor', 'default');
+      }
     });
 
     $animatedElement.on("mouseleave", function () {
@@ -188,9 +199,15 @@ $(document).ready(function () {
         $mapContainer.is(
           ".contact-view-active, .music-view-active, .merch-view-active"
         )
-      )
+      ) {
+        // If in an active view, the specific view's cursor logic (if any) or default would apply.
+        // Or we might want to ensure it's default if mouse leaves the interactive area.
         return;
+      }
+      // Hide all overlays when mouse leaves the main animated element
       hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
+      // Reset cursor
+      $animatedElement.css('cursor', 'default');
     });
 
     // --- Click Logic ---
@@ -222,6 +239,7 @@ $(document).ready(function () {
         hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
         $mapContainer.addClass("contact-view-active");
         $animatedElement.addClass("gif-animate-forward");
+        $contactInfo.removeClass('hide');
         setTimeout(() => {
           isTransitioning = false;
         }, 500); // Match CSS animation
@@ -305,7 +323,7 @@ $(document).ready(function () {
         $musicPlayerWrapper
           .removeClass("player-visible")
           .addClass("keep-visible-during-slide");
-        const slideDownDurationMs = 600; // Match CSS
+        const slideDownDurationMs = 400; // Match CSS
 
         setTimeout(() => {
           $musicPlayerWrapper.removeClass("keep-visible-during-slide");
@@ -315,7 +333,7 @@ $(document).ready(function () {
           setupAndPlayVideo(musicVideoReverse, $musicVideoReverseElement, {
             muted: false,
             loop: false,
-            playbackRate: 2,
+            playbackRate: 2.5,
             onendedCallback: () => {
               resetAndHideVideo(musicVideoReverse, $musicVideoReverseElement);
               if (musicVideoReverse) musicVideoReverse.playbackRate = 1.0; // Reset playback rate
@@ -337,6 +355,9 @@ $(document).ready(function () {
         $animatedElement.removeClass("gif-animate-forward hide on-top");
         performCommonResetTasks();
         isTransitioning = false;
+        setTimeout(() => {
+          $contactInfo.addClass('hide');
+        }, 1500)
       } else if (source === "merch") {
         resetAndHideVideo(merchVideo, $merchVideoElement); // Hide forward video if it was stuck
         $animatedElement.removeClass("on-top hide gif-animate-forward"); // Reset main animation element
