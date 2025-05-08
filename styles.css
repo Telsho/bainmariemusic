@@ -29,7 +29,7 @@ body {
   overflow-x: hidden;
   position: relative;
   background: var(--bg-color);
-  cursor: url('Bathrtubcursor.png'), auto;
+  cursor: url('CD.png'), auto;
   display: flex;
   flex-direction: column;
   justify-content: center; /* Center vertically */
@@ -144,7 +144,7 @@ button:hover {
 
 #contact-info p {
   margin: 0 0 15px 0;
-  font-size: 2em;
+  font-size: 1.6em;
   font-family: 'RainyHearts', 'Verdana', sans-serif;
 }
 
@@ -161,10 +161,10 @@ button:hover {
 /* --- MUSIC IFRAME CONTAINER --- REVISED SLIDE-UP (No Fade, Slow) --- */
 #music-player-wrapper {
   position: absolute;
-  bottom: 17%;
+  bottom: 16%;
   left: 0;
   width: 100%;
-  height: 70%;
+  height: 86%;
   z-index: 4;
   overflow: hidden;
   visibility: hidden; /* Base state is hidden */
@@ -213,9 +213,6 @@ button:hover {
 #music-iframe {
   width: 60%; /* Adjust width if needed */
   flex-grow: 1;
-  /* Remove constraints added when height was small */
-  /* max-height: calc(100% - 50px); */
-  /* min-height: 80px; */
   border: none;
   display: block;
 }
@@ -225,8 +222,10 @@ button:hover {
   padding: 0.8em 1em 0.3em;
   font-size: 1.2em;
   font-family: 'RainyHearts', 'Verdana', sans-serif;
-  border: 0 solid black;
+  border: 0px solid black;
   color: #000;
+  position: relative;
+  left: -25%;
   transform: translateX(.5em);
   transition: transform .4s ease; /* Keep button's own transition */
 }
@@ -263,7 +262,7 @@ button:hover {
   width: 80%;
   max-width: 500px;
   min-width: 150px;
-  height: 30%;
+  height: 40%;
   min-height: 200px;
   max-height: 400px;
   /* MODIFIED: z-index to be behind merch videos */
@@ -273,7 +272,7 @@ button:hover {
   align-items: center;
   background-color: var(--bg-color);
   padding: 20px;
-  border: 1px solid black;
+  border: 0px solid black;
   visibility: visible;
   pointer-events: none;
   /* REMOVED default transition for opacity here if instant appearance is desired.
@@ -300,7 +299,7 @@ button:hover {
   padding: 0.8em 1em 0.3em;
   font-size: 1.2em;
   font-family: 'RainyHearts', 'Verdana', sans-serif;
-  border: 1px solid #555;
+  border: 0px solid #555;
   color: #000;
   transform: translateY(-.5em);
   transition: transform .4s ease;
@@ -321,11 +320,11 @@ button:hover {
 
 /* CONTACT VIEW ACTIVE (Applied to .map-container) */
 .map-container.contact-view-active {
-    cursor: default !important;
+  cursor: url('CD.png'), auto;
 }
 .map-container.contact-view-active #map,
 .map-container.contact-view-active #map video#home-animated {
-    cursor: default !important;
+  cursor: url('CD.png'), auto;
 }
 /* Hide overlays and home video when contact is active */
 .map-container.contact-view-active #music-hover-overlay,
