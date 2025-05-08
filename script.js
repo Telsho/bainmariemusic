@@ -263,7 +263,7 @@ $(document).ready(function () {
         setupAndPlayVideo(musicVideo, $musicVideoElement, {
           muted: false,
           loop: false,
-          playbackRate: 1.5,
+          playbackRate: 1.8,
           onendedCallback: () => {
             if ($mapContainer.hasClass("music-view-active")) {
               $animatedElement.removeClass("on-top");
@@ -296,7 +296,7 @@ $(document).ready(function () {
         setupAndPlayVideo(merchVideo, $merchVideoElement, {
           muted: false,
           loop: false,
-          playbackRate: 1.5,
+          playbackRate: 1.8,
           onendedCallback: () => {
             if ($mapContainer.hasClass("merch-view-active")) {
               $animatedElement.removeClass("on-top");
