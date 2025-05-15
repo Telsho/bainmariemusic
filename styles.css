@@ -403,4 +403,8 @@ button:hover {
   #music-iframe {
     width: 80%;
   }
+
+  #merch-content-container {
+    visibility: hidden;
+  }
 }
