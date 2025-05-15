@@ -66,7 +66,7 @@ button:hover {
 .map-container {
   aspect-ratio: 968 / 974;
   width: min(95vw, calc(95vh * (968 / 974)));
-  height: auto;
+  height: min(95vh, calc(95vh * (968 / 974)));;
   max-width: min(968px, 95vw);
   max-height: min(974px, 95vh);
   margin: auto; /* Center horizontally */
@@ -388,4 +388,19 @@ button:hover {
      visibility: visible;
      pointer-events: auto;
    }
+}
+
+@media (max-width: 450px) {
+  #map video#home-animated, #map video#music-video, #map video#music-video-reverse, #map video#merch-video, #map video#merch-video-reverse  {
+    object-fit: contain;
+  }
+
+  #music-player-wrapper {
+    bottom: 32%;
+    height: 70%;
+  }
+
+  #music-iframe {
+    width: 80%;
+  }
 }
