@@ -362,6 +362,10 @@ $(document).ready(function () {
         resetAndHideVideo(merchVideo, $merchVideoElement); // Hide forward video if it was stuck
         $animatedElement.removeClass("on-top hide gif-animate-forward"); // Reset main animation element
 
+        if(window.screen.width < 450){
+          $merchContentContainer.addClass("hide");
+
+        }
         
         setupAndPlayVideo(merchVideoReverse, $merchVideoReverseElement, {
           muted: false, // Assuming you want sound for these, adjust if not
