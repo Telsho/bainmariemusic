@@ -1,30 +1,40 @@
-// script.js - Combined Logic (Including Merch & Updated Music Animation)
+// script.js - Streamlined Combined Logic
 // Last updated: 2025-05-05 (Based on conversation)
 
 $(document).ready(function () {
-  // --- Cache jQuery Objects ---
-  const $body = $("body");
-  const $mapContainer = $(".map-container");
-  const $map = $("#map");
-  const $animatedElement = $("#home-animated"); // Main looping video
-  const $contactInfo = $("#contact-info");
-  const $backButton = $("#back-button"); // Contact back button
+  // --- Cache jQuery Objects & Perform Existence Checks ---
+  const elementSelectors = {
+    body: "body",
+    mapContainer: ".map-container",
+    map: "#map",
+    animatedElement: "#home-animated",
+    contactInfo: "#contact-info",
+    backButton: "#back-button",
+    musicVideoElement: "#music-video",
+    musicVideoReverseElement: "#music-video-reverse",
+    musicFrameContainer: "#music-iframe-container",
+    musicPlayerWrapper: "#music-player-wrapper",
+    musicIframe: "#music-iframe",
+    musicBackButton: "#music-back-button",
+    merchVideoElement: "#merch-video",
+    merchVideoReverseElement: "#merch-video-reverse",
+    merchContentContainer: "#merch-content-container",
+    merchBackButton: "#merch-back-button",
+  };
 
-  const $musicVideoElement = $("#music-video"); // Music forward animation
-  const $musicVideoReverseElement = $("#music-video-reverse"); // Music reverse animation
-  const $musicFrameContainer = $("#music-iframe-container"); // Inner container for iframe/button
-  const $musicPlayerWrapper = $("#music-player-wrapper"); // The outer wrapper for visibility/clipping
-  const $musicIframe = $("#music-iframe");
-  const $musicBackButton = $("#music-back-button"); // Music back button
+  const $elements = {};
+  let allElementsFound = true;
 
-  // Merch Elements
-  const $merchVideoElement = $("#merch-video"); // Merch forward animation
-  const $merchVideoReverseElement = $("#merch-video-reverse"); // Merch reverse animation
-  const $merchContentContainer = $("#merch-content-container"); // Merch widget container
-  const $merchBackButton = $("#merch-back-button"); // Merch back button
+  for (const key in elementSelectors) {
+    $elements[key] = $(elementSelectors[key]);
+    if ($elements[key].length === 0) {
+      allElementsFound = false;
+      console.warn(`Essential element missing: ${elementSelectors[key]}`);
+    }
+  }
 
-  const originalWidth = 957;
-  const originalHeight = 879;
+  const originalWidth = 968;
+  const originalHeight = 974;
 
   const hotspots = [
     {
@@ -52,44 +62,29 @@ $(document).ready(function () {
       yMaxRatio: 745 / originalHeight,
     },
   ];
-  const contactHotspot = hotspots.find((spot) => spot.name === "contact");
-  const musicHotspot = hotspots.find((spot) => spot.name === "music");
-  const merchHotspot = hotspots.find((spot) => spot.name === "merch");
 
   const $overlays = {};
-  let allElementsFound = true;
-
   hotspots.forEach((spot) => {
     $overlays[spot.overlaySelector] = $(spot.overlaySelector);
-    if ($overlays[spot.overlaySelector].length === 0) allElementsFound = false;
+    if ($overlays[spot.overlaySelector].length === 0) {
+      allElementsFound = false;
+      console.warn(`Hotspot overlay missing: ${spot.overlaySelector}`);
+    }
   });
 
-  // Check other essential elements
-  if ($body.length === 0) allElementsFound = false;
-  if ($mapContainer.length === 0) allElementsFound = false;
-  if ($map.length === 0) allElementsFound = false; // Added map check for completeness if used explicitly
-  if ($animatedElement.length === 0) allElementsFound = false;
-  if ($contactInfo.length === 0) allElementsFound = false;
-  if ($backButton.length === 0) allElementsFound = false;
-  if ($musicVideoElement.length === 0) allElementsFound = false;
-  if ($musicVideoReverseElement.length === 0) allElementsFound = false;
-  if ($musicFrameContainer.length === 0) allElementsFound = false;
-  if ($musicPlayerWrapper.length === 0) allElementsFound = false;
-  if ($musicIframe.length === 0) allElementsFound = false;
-  if ($musicBackButton.length === 0) allElementsFound = false;
-  if ($merchVideoElement.length === 0) allElementsFound = false;
-  if ($merchVideoReverseElement.length === 0) allElementsFound = false;
-  if ($merchContentContainer.length === 0) allElementsFound = false;
-  if ($merchBackButton.length === 0) allElementsFound = false;
-  if (!contactHotspot || !musicHotspot || !merchHotspot)
+  const requiredHotspotNames = ["music", "merch", "contact"];
+  const definedHotspotNames = hotspots.map(spot => spot.name);
+  if (!requiredHotspotNames.every(name => definedHotspotNames.includes(name))) {
     allElementsFound = false;
+    console.warn("One or more required hotspot configurations (music, merch, contact) are missing in the hotspots array.");
+  }
 
   if (allElementsFound) {
-    const homeVideo = $animatedElement[0];
-    const musicVideo = $musicVideoElement[0];
-    const musicVideoReverse = $musicVideoReverseElement[0];
-    const merchVideo = $merchVideoElement[0];
-    const merchVideoReverse = $merchVideoReverseElement[0];
+    const homeVideo = $elements.animatedElement[0];
+    const musicVideo = $elements.musicVideoElement[0];
+    const musicVideoReverse = $elements.musicVideoReverseElement[0];
+    const merchVideo = $elements.merchVideoElement[0];
+    const merchVideoReverse = $elements.merchVideoReverseElement[0];
 
     let isTransitioning = false;
 
@@ -117,8 +112,7 @@ $(document).ready(function () {
       }
     ) {
       if (!videoInstance || !$videoElement || !$videoElement.length) {
-        if (onErrorCallback)
-          onErrorCallback(new Error("Video instance or element missing"));
+        if (onErrorCallback) onErrorCallback(new Error("Video instance or element missing"));
         return;
       }
 
@@ -133,184 +127,173 @@ $(document).ready(function () {
 
       if (onendedCallback) videoInstance.onended = onendedCallback;
 
+      // setTimeout to ensure DOM updates apply before play, and catch play() promise
       setTimeout(() => {
-        // Ensure DOM updates apply before play
         videoInstance.play().catch((error) => {
           if (onErrorCallback) {
             onErrorCallback(error);
           } else {
-            isTransitioning = false; // Generic fallback
+            console.error("Video play error:", error);
+            isTransitioning = false; // Default error handling
           }
         });
       }, 0);
     }
 
-    // --- Hover Effect Logic ---
-    $animatedElement.on("mousemove", function (event) {
-      if (
-        isTransitioning ||
-        $mapContainer.is(
-          ".contact-view-active, .music-view-active, .merch-view-active"
-        )
-      ) {
-        hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
-        // Ensure cursor resets if a view is active and mouse moves
-        if (!$mapContainer.hasClass("contact-view-active") && !$mapContainer.hasClass("music-view-active") && !$mapContainer.hasClass("merch-view-active")) {
-            $animatedElement.css('cursor', 'default');
+    // --- Hotspot Detection Helper ---
+    function getActiveHotspot(
+      event,
+      $element,
+      hotspotsArray,
+      intrinsicImgWidth,
+      intrinsicImgHeight
+    ) {
+      const containerWidth = $element.width();
+      const containerHeight = $element.height();
+
+      if (containerWidth === 0 || containerHeight === 0) return null;
+
+      const elementOffset = $element.offset();
+      const mouseX_relative_to_container = event.pageX - elementOffset.left;
+      const mouseY_relative_to_container = event.pageY - elementOffset.top;
+
+      let effectiveImageWidth = containerWidth;
+      let effectiveImageHeight = containerHeight;
+      let mouseX_on_image = mouseX_relative_to_container;
+      let mouseY_on_image = mouseY_relative_to_container;
+
+      const isContainMode = window.innerWidth < 450;
+
+      if (isContainMode) {
+        const imageAspectRatio = intrinsicImgWidth / intrinsicImgHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (imageAspectRatio > containerAspectRatio) {
+          effectiveImageWidth = containerWidth;
+          effectiveImageHeight = effectiveImageWidth / imageAspectRatio;
+          offsetY = (containerHeight - effectiveImageHeight) / 2;
+        } else {
+          effectiveImageHeight = containerHeight;
+          effectiveImageWidth = effectiveImageHeight * imageAspectRatio;
+          offsetX = (containerWidth - effectiveImageWidth) / 2;
         }
+
+        mouseX_on_image = mouseX_relative_to_container - offsetX;
+        mouseY_on_image = mouseY_relative_to_container - offsetY;
+
+        if (
+          mouseX_on_image < 0 || mouseX_on_image > effectiveImageWidth ||
+          mouseY_on_image < 0 || mouseY_on_image > effectiveImageHeight
+        ) {
+          return null;
+        }
+      }
+
+      for (const spot of hotspotsArray) {
+        if (
+          mouseX_on_image >= spot.xMinRatio * effectiveImageWidth &&
+          mouseX_on_image <= spot.xMaxRatio * effectiveImageWidth &&
+          mouseY_on_image >= spot.yMinRatio * effectiveImageHeight &&
+          mouseY_on_image <= spot.yMaxRatio * effectiveImageHeight
+        ) {
+          return spot;
+        }
+      }
+      return null;
+    }
+    
+    function isAnyViewActive() {
+        return $elements.mapContainer.is(".contact-view-active, .music-view-active, .merch-view-active");
+    }
+
+    // --- Hover Effect Logic ---
+    $elements.animatedElement.on("mousemove", function (event) {
+      if (isTransitioning || isAnyViewActive()) {
+        hotspots.forEach((spot) => $overlays[spot.overlaySelector]?.hide());
+        if (!isAnyViewActive()) $elements.animatedElement.css("cursor", "default");
         return;
       }
 
-      const currentElementWidth = $animatedElement.width();
-      const currentElementHeight = $animatedElement.height();
-      if (currentElementWidth === 0 || currentElementHeight === 0) return;
-
-      const elementOffset = $animatedElement.offset();
-      const mouseX = event.pageX - elementOffset.left;
-      const mouseY = event.pageY - elementOffset.top;
-
-      let isOverAnyHotspot = false;
+      const activeHotspot = getActiveHotspot(event, $elements.animatedElement, hotspots, originalWidth, originalHeight);
+      
       hotspots.forEach((spot) => {
-        const isInsideThisHotspot =
-          mouseX >= spot.xMinRatio * currentElementWidth &&
-          mouseX <= spot.xMaxRatio * currentElementWidth &&
-          mouseY >= spot.yMinRatio * currentElementHeight &&
-          mouseY <= spot.yMaxRatio * currentElementHeight;
-
-        // Show/hide the specific overlay for this hotspot
-        $overlays[spot.overlaySelector].toggle(isInsideThisHotspot);
-
-        if (isInsideThisHotspot) {
-          isOverAnyHotspot = true;
+        if ($overlays[spot.overlaySelector]) {
+            const action = activeHotspot && activeHotspot.name === spot.name ? 'show' : 'hide';
+            $overlays[spot.overlaySelector][action]();
         }
       });
-
-      // Change cursor on #home-animated based on hotspot hover
-      if (isOverAnyHotspot) {
-        $animatedElement.css('cursor', 'pointer');
-      } else {
-        $animatedElement.css('cursor', 'default');
-      }
+      $elements.animatedElement.css("cursor", activeHotspot ? "pointer" : "default");
     });
 
-    $animatedElement.on("mouseleave", function () {
-      if (
-        isTransitioning ||
-        $mapContainer.is(
-          ".contact-view-active, .music-view-active, .merch-view-active"
-        )
-      ) {
-        // If in an active view, the specific view's cursor logic (if any) or default would apply.
-        // Or we might want to ensure it's default if mouse leaves the interactive area.
-        return;
-      }
-      // Hide all overlays when mouse leaves the main animated element
-      hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
-      // Reset cursor
-      $animatedElement.css('cursor', 'default');
+    $elements.animatedElement.on("mouseleave", function () {
+      if (isTransitioning || isAnyViewActive()) return;
+      hotspots.forEach((spot) => $overlays[spot.overlaySelector]?.hide());
+      $elements.animatedElement.css("cursor", "default");
     });
 
     // --- Click Logic ---
-    $animatedElement.on("click", function (event) {
-      if (
-        isTransitioning ||
-        $mapContainer.is(
-          ".contact-view-active, .music-view-active, .merch-view-active"
-        )
-      )
-        return;
+    $elements.animatedElement.on("click", function (event) {
+      if (isTransitioning || isAnyViewActive()) return;
 
-      const currentElementWidth = $animatedElement.width();
-      const currentElementHeight = $animatedElement.height();
-      if (currentElementWidth === 0 || currentElementHeight === 0) return;
+      const clickedHotspot = getActiveHotspot(event, $elements.animatedElement, hotspots, originalWidth, originalHeight);
 
-      const elementOffset = $animatedElement.offset();
-      const clickX = event.pageX - elementOffset.left;
-      const clickY = event.pageY - elementOffset.top;
-
-      // Check Contact Click
-      if (
-        clickX >= contactHotspot.xMinRatio * currentElementWidth &&
-        clickX <= contactHotspot.xMaxRatio * currentElementWidth &&
-        clickY >= contactHotspot.yMinRatio * currentElementHeight &&
-        clickY <= contactHotspot.yMaxRatio * currentElementHeight
-      ) {
+      if (clickedHotspot) {
         isTransitioning = true;
-        hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
-        $mapContainer.addClass("contact-view-active");
-        $animatedElement.addClass("gif-animate-forward");
-        $contactInfo.removeClass('hide');
-        setTimeout(() => {
-          isTransitioning = false;
-        }, 500); // Match CSS animation
-        return;
-      }
+        hotspots.forEach((spot) => $overlays[spot.overlaySelector]?.hide());
 
-      // Check Music Click
-      if (
-        clickX >= musicHotspot.xMinRatio * currentElementWidth &&
-        clickX <= musicHotspot.xMaxRatio * currentElementWidth &&
-        clickY >= musicHotspot.yMinRatio * currentElementHeight &&
-        clickY <= musicHotspot.yMaxRatio * currentElementHeight
-      ) {
-        isTransitioning = true;
-        hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
-        $animatedElement.removeClass("on-top");
-        if (homeVideo) homeVideo.pause();
-        $body.addClass("music-info-hidden");
-        $mapContainer.addClass("music-view-active");
+        if (clickedHotspot.name === "contact") {
+          $elements.mapContainer.addClass("contact-view-active");
+          $elements.animatedElement.addClass("gif-animate-forward");
+          $elements.contactInfo.removeClass("hide");
+          setTimeout(() => { isTransitioning = false; }, 500);
+        } else if (clickedHotspot.name === "music") {
+          $elements.animatedElement.removeClass("on-top");
+          if (homeVideo) homeVideo.pause();
+          $elements.body.addClass("music-info-hidden");
+          $elements.mapContainer.addClass("music-view-active");
 
-        setupAndPlayVideo(musicVideo, $musicVideoElement, {
-          muted: false,
-          loop: false,
-          playbackRate: 1.8,
-          onendedCallback: () => {
-            if ($mapContainer.hasClass("music-view-active")) {
-              $animatedElement.removeClass("on-top");
-              $musicPlayerWrapper.addClass("player-visible");
-            }
-            isTransitioning = false;
-          },
-          onErrorCallback: () => {
-            isTransitioning = false;
-            resetToDefaultView("music", true);
-          },
-        });
-        return;
-      }
+          setupAndPlayVideo(musicVideo, $elements.musicVideoElement, {
+            muted: false, loop: false, playbackRate: 1.8,
+            onendedCallback: () => {
+              if ($elements.mapContainer.hasClass("music-view-active")) {
+                $elements.musicPlayerWrapper.addClass("player-visible");
+              }
+              isTransitioning = false;
+            },
+            onErrorCallback: (err) => {
+              console.error("Music forward video error:", err);
+              isTransitioning = false;
+              resetToDefaultView("music", true);
+            },
+          });
+        } else if (clickedHotspot.name === "merch") {
+          $elements.animatedElement.removeClass("on-top");
+          if (homeVideo) homeVideo.pause();
+          $elements.body.addClass("merch-info-hidden");
+          $elements.mapContainer.addClass("merch-view-active");
+          $elements.merchContentContainer.removeClass("hide");
 
-      // Check Merch Click
-      if (
-        clickX >= merchHotspot.xMinRatio * currentElementWidth &&
-        clickX <= merchHotspot.xMaxRatio * currentElementWidth &&
-        clickY >= merchHotspot.yMinRatio * currentElementHeight &&
-        clickY <= merchHotspot.yMaxRatio * currentElementHeight
-      ) {
-        isTransitioning = true;
-        hotspots.forEach((spot) => $overlays[spot.overlaySelector].hide());
-        $animatedElement.removeClass("on-top");
-        if (homeVideo) homeVideo.pause();
-        $body.addClass("merch-info-hidden");
-        $mapContainer.addClass("merch-view-active");
-        $merchContentContainer.removeClass("hide");
-        setupAndPlayVideo(merchVideo, $merchVideoElement, {
-          muted: false,
-          loop: false,
-          playbackRate: 1.8,
-          onendedCallback: () => {
-            if ($mapContainer.hasClass("merch-view-active")) {
-              $animatedElement.removeClass("on-top");
-              $merchContentContainer.addClass("merch-visible");
-              $merchVideoElement.addClass("hide"); // Hide forward merch video after it plays
-            }
-            isTransitioning = false;
-          },
-          onErrorCallback: () => {
-            isTransitioning = false;
-            resetToDefaultView("merch", true);
-          },
-        });
-        return;
+          setupAndPlayVideo(merchVideo, $elements.merchVideoElement, {
+            muted: false, loop: false, playbackRate: 1.8,
+            onendedCallback: () => {
+              if ($elements.mapContainer.hasClass("merch-view-active")) {
+                $elements.merchContentContainer.addClass("merch-visible");
+                $elements.merchVideoElement.addClass("hide");
+              }
+              isTransitioning = false;
+            },
+            onErrorCallback: (err) => {
+              console.error("Merch forward video error:", err);
+              isTransitioning = false;
+              resetToDefaultView("merch", true);
+            },
+          });
+        } else {
+          // Should not happen if hotspots array is well-defined
+          isTransitioning = false; 
+        }
       }
     });
 
@@ -319,120 +302,95 @@ $(document).ready(function () {
       if (isTransitioning && !forceReset) return;
       isTransitioning = true;
 
-      if (source === "music") {
-        $musicPlayerWrapper
-          .removeClass("player-visible")
-          .addClass("keep-visible-during-slide");
-        const slideDownDurationMs = 400; // Match CSS
-
-        setTimeout(() => {
-          $musicPlayerWrapper.removeClass("keep-visible-during-slide");
-          resetAndHideVideo(musicVideo, $musicVideoElement);
-          $animatedElement.removeClass("on-top hide gif-animate-forward");
-
-          setupAndPlayVideo(musicVideoReverse, $musicVideoReverseElement, {
-            muted: false,
-            loop: false,
-            playbackRate: 2.5,
-            onendedCallback: () => {
-              resetAndHideVideo(musicVideoReverse, $musicVideoReverseElement);
-              if (musicVideoReverse) musicVideoReverse.playbackRate = 1.0; // Reset playback rate
-              $animatedElement.addClass("on-top");
-              performCommonResetTasks();
-              isTransitioning = false;
-            },
-            onErrorCallback: () => {
-              $musicPlayerWrapper.removeClass("keep-visible-during-slide");
-              resetAndHideVideo(musicVideoReverse, $musicVideoReverseElement);
-              if (musicVideoReverse) musicVideoReverse.playbackRate = 1.0;
-              $animatedElement.addClass("on-top");
-              performCommonResetTasks();
-              isTransitioning = false;
-            },
-          });
-        }, slideDownDurationMs);
-      } else if (source === "contact") {
-        $animatedElement.removeClass("gif-animate-forward hide on-top");
+      const commonReverseVideoEndTasks = (reverseVideoInstance, $reverseVideoElement, specificCleanup) => {
+        if (specificCleanup) specificCleanup();
+        resetAndHideVideo(reverseVideoInstance, $reverseVideoElement);
+        $elements.animatedElement.addClass("on-top");
         performCommonResetTasks();
         isTransitioning = false;
+      };
+      
+      if (source === "music") {
+        $elements.musicPlayerWrapper.removeClass("player-visible").addClass("keep-visible-during-slide");
         setTimeout(() => {
-          $contactInfo.addClass('hide');
-        }, 1500)
-      } else if (source === "merch") {
-        resetAndHideVideo(merchVideo, $merchVideoElement); // Hide forward video if it was stuck
-        $animatedElement.removeClass("on-top hide gif-animate-forward"); // Reset main animation element
+          $elements.musicPlayerWrapper.removeClass("keep-visible-during-slide");
+          resetAndHideVideo(musicVideo, $elements.musicVideoElement);
+          $elements.animatedElement.removeClass("on-top hide gif-animate-forward");
 
-        if(window.screen.width < 450){
-          $merchContentContainer.addClass("hide");
-
-        }
+          setupAndPlayVideo(musicVideoReverse, $elements.musicVideoReverseElement, {
+            muted: false, loop: false, playbackRate: 2.5,
+            onendedCallback: () => commonReverseVideoEndTasks(musicVideoReverse, $elements.musicVideoReverseElement, () => {
+                if (musicVideoReverse) musicVideoReverse.playbackRate = 1.0;
+            }),
+            onErrorCallback: (err) => {
+              console.error("Music reverse video error:", err);
+              commonReverseVideoEndTasks(musicVideoReverse, $elements.musicVideoReverseElement, () => {
+                if (musicVideoReverse) musicVideoReverse.playbackRate = 1.0;
+                $elements.musicPlayerWrapper.removeClass("keep-visible-during-slide"); // Ensure cleanup
+              });
+            },
+          });
+        }, 400); // slideDownDurationMs
+      } else if (source === "contact") {
+        $elements.animatedElement.removeClass("gif-animate-forward hide on-top");
+        performCommonResetTasks(); // Hides contactInfo among other things
+        setTimeout(() => { isTransitioning = false;  $elements.contactInfo.addClass("hide"); }, 1500); // Delay for potential hide animation
         
-        setupAndPlayVideo(merchVideoReverse, $merchVideoReverseElement, {
-          muted: false, // Assuming you want sound for these, adjust if not
-          loop: false,
-          playbackRate: 2, // Or your desired playback rate for reverse
-          onendedCallback: () => {
-            // NOW, after the reverse video has finished, hide the merch content
-            $merchContentContainer.removeClass("merch-visible on-top");
-            $merchContentContainer.addClass("hide");
-            resetAndHideVideo(merchVideoReverse, $merchVideoReverseElement);
-            $animatedElement.addClass("on-top"); // Ensure home animation can come back on top
-            performCommonResetTasks(); // This will also ensure merch-visible/on-top are cleared as a final check
-            isTransitioning = false;
-          },
-          onErrorCallback: () => {
-            // Also hide merch content on error and reset
-            $merchContentContainer.removeClass("merch-visible on-top");
-            if ($map && $map.length) $map.removeClass("hide"); // From original error path
-            resetAndHideVideo(merchVideoReverse, $merchVideoReverseElement);
-            $animatedElement.addClass("on-top");
-            performCommonResetTasks();
-            isTransitioning = false;
+      } else if (source === "merch") {
+        resetAndHideVideo(merchVideo, $elements.merchVideoElement);
+        $elements.animatedElement.removeClass("on-top hide gif-animate-forward");
+        if (window.innerWidth < 450) $elements.merchContentContainer.addClass("hide");
+
+        setupAndPlayVideo(merchVideoReverse, $elements.merchVideoReverseElement, {
+          muted: false, loop: false, playbackRate: 2,
+          onendedCallback: () => commonReverseVideoEndTasks(merchVideoReverse, $elements.merchVideoReverseElement, () => {
+            $elements.merchContentContainer.removeClass("merch-visible on-top").addClass("hide");
+          }),
+          onErrorCallback: (err) => {
+            console.error("Merch reverse video error:", err);
+            commonReverseVideoEndTasks(merchVideoReverse, $elements.merchVideoReverseElement, () => {
+              $elements.merchContentContainer.removeClass("merch-visible on-top").addClass("hide");
+              if ($elements.map.length) $elements.map.removeClass("hide");
+            });
           },
         });
       } else {
-        // Fallback
-        $animatedElement.removeClass("hide gif-animate-forward on-top");
         performCommonResetTasks();
         isTransitioning = false;
       }
     }
 
     function performCommonResetTasks() {
-      resetAndHideVideo(musicVideo, $musicVideoElement);
-      resetAndHideVideo(musicVideoReverse, $musicVideoReverseElement);
-      resetAndHideVideo(merchVideo, $merchVideoElement);
-      resetAndHideVideo(merchVideoReverse, $merchVideoReverseElement);
+      [musicVideo, musicVideoReverse, merchVideo, merchVideoReverse].forEach((vid, index) => {
+        const $el = [$elements.musicVideoElement, $elements.musicVideoReverseElement, $elements.merchVideoElement, $elements.merchVideoReverseElement][index];
+        resetAndHideVideo(vid, $el);
+      });
 
-      $mapContainer.removeClass(
-        "contact-view-active music-view-active merch-view-active"
-      );
-      $body.removeClass("music-info-hidden merch-info-hidden");
-      $musicPlayerWrapper.removeClass(
-        "player-visible keep-visible-during-slide"
-      );
-      $merchContentContainer.removeClass("merch-visible on-top");
-      $animatedElement.removeClass("hide gif-animate-forward"); // on-top is handled by specific reset logic
+      $elements.mapContainer.removeClass("contact-view-active music-view-active merch-view-active");
+      $elements.body.removeClass("music-info-hidden merch-info-hidden");
+      $elements.musicPlayerWrapper.removeClass("player-visible keep-visible-during-slide");
+      $elements.merchContentContainer.removeClass("merch-visible on-top").addClass("hide");
 
-      if (
-        homeVideo &&
-        !$mapContainer.is(
-          ".contact-view-active, .music-view-active, .merch-view-active"
-        )
-      ) {
-        $animatedElement.addClass("on-top");
+      $elements.animatedElement.removeClass("hide gif-animate-forward");
+
+      if (homeVideo && !isAnyViewActive()) {
+        $elements.animatedElement.addClass("on-top");
         homeVideo.currentTime = 0;
         homeVideo.loop = true;
         homeVideo.muted = true;
-        homeVideo.play().catch(() => {
-          /* Silent error for streamlining */
-        });
+        homeVideo.play().catch((e) => console.error("Error playing home video:", e));
+      } else if (homeVideo) {
+        homeVideo.pause(); // Ensure home video is paused if a view is still active
       }
     }
 
     // --- Back Button Event Handlers ---
-    $backButton.on("click", () => resetToDefaultView("contact"));
-    $musicBackButton.on("click", () => resetToDefaultView("music"));
-    $merchBackButton.on("click", () => resetToDefaultView("merch"));
-  } // End if (allElementsFound)
+    $elements.backButton.on("click", () => resetToDefaultView("contact"));
+    $elements.musicBackButton.on("click", () => resetToDefaultView("music"));
+    $elements.merchBackButton.on("click", () => resetToDefaultView("merch"));
+
+  } else {
+    console.error("Initialization failed: Essential elements or hotspot configurations missing. Interactivity disabled.");
+    // Consider disabling UI or showing a message to the user
+  }
 });
