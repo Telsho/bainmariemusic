@@ -404,7 +404,12 @@ button:hover {
     width: 80%;
   }
 
+  #music-iframe-container #music-back-button{
+    left: -34%;
+  }
+
   #merch-content-container {
     visibility: hidden;
+    top: 20%;
   }
 }
